@@ -8,6 +8,13 @@
 import Foundation
 
 struct Constants {
-    static let maxString = "max"
-    static let maxIconString = "star.hexagon"
+    static let maxString = "Max"
+    
+    // Content View 
+    static let chatString = "Chat"
+    static let chatIconString = "message"
+    static let productivityString = "Productivity"
+    static let productivityIconString = "bolt.fill"
+    static let settingsString = "Settings"
+    static let settingsIconString = "gearshape.fill"
 }

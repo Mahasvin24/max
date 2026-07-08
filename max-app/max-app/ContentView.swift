@@ -8,35 +8,40 @@
 import SwiftUI
 
 struct ContentView: View {
+    private enum Page {
+        case home
+        case productivity
+        case settings
+    }
+    
     @State private var selected: Page = .home
     
     var body: some View {
         NavigationSplitView {
             List(selection: $selected) {
-                Label("Home", systemImage: "message")
+                // chat
+                Label(Constants.chatString, systemImage: Constants.chatIconString)
                     .tag(Page.home)
-                Label("Screen Time", systemImage: "hourglass")
-                    .tag(Page.screenTime)
-                Label("Settings", systemImage: "gearshape.fill")
+                
+                // productivity
+                Label(Constants.productivityString, systemImage: Constants.productivityIconString)
+                    .tag(Page.productivity)
+                
+                // settings
+                Label(Constants.settingsString, systemImage: Constants.settingsIconString)
                     .tag(Page.settings)
             }
         } detail: {
             switch selected {
             case .home:
-                Label("home page", systemImage: "message")
-            case .screenTime:
-                Label("Screen Time page", systemImage: "hourglass")
+                HomeView()
+            case .productivity:
+                ProductivityView()
             case .settings:
-                Label("Settings page", systemImage: "gearshape.fill")
+                SettingsView()
             }
         }
     }
-}
-
-enum Page {
-    case home
-    case screenTime
-    case settings
 }
 
 #Preview {
