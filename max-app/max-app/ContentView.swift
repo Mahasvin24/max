@@ -13,18 +13,21 @@ struct ContentView: View {
     var body: some View {
         NavigationSplitView {
             List(selection: $selected) {
-                Label("Home", systemImage: "bubble")
+                Label("Home", systemImage: "message")
+                    .tag(Page.home)
                 Label("Screen Time", systemImage: "hourglass")
-                Label("Settings", systemImage: "gear")
+                    .tag(Page.screenTime)
+                Label("Settings", systemImage: "gearshape.fill")
+                    .tag(Page.settings)
             }
         } detail: {
             switch selected {
             case .home:
-                Label("home", systemImage: "home")
+                Label("home page", systemImage: "message")
             case .screenTime:
-                Label("Screen Time", systemImage: "home")
+                Label("Screen Time page", systemImage: "hourglass")
             case .settings:
-                Label("stuff", systemImage: "settings")
+                Label("Settings page", systemImage: "gearshape.fill")
             }
         }
     }
