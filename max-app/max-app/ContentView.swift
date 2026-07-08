@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  app
+//  max-app
 //
 //  Created by Mahasvin Shanmugapriya Manikandan on 7/7/26.
 //
