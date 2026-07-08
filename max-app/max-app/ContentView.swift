@@ -8,21 +8,32 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var selected: Page? = .home
+    @State private var selected: Page = .home
     
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        NavigationSplitView {
+            List(selection: $selected) {
+                Label("Home", systemImage: "bubble")
+                Label("Screen Time", systemImage: "hourglass")
+                Label("Settings", systemImage: "gear")
+            }
+        } detail: {
+            switch selected {
+            case .home:
+                Label("home", systemImage: "home")
+            case .screenTime:
+                Label("Screen Time", systemImage: "home")
+            case .settings:
+                Label("stuff", systemImage: "settings")
+            }
         }
-        .padding()
     }
 }
 
 enum Page {
     case home
+    case screenTime
+    case settings
 }
 
 #Preview {
