@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State private var selected: Page? = .home
+    
     var body: some View {
         VStack {
             Image(systemName: "globe")
@@ -17,6 +19,10 @@ struct ContentView: View {
         }
         .padding()
     }
+}
+
+enum Page {
+    case home
 }
 
 #Preview {
