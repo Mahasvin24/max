@@ -27,16 +27,19 @@ struct HomeView: View {
             ZStack(alignment: .topLeading) {
                 if text.isEmpty {
                     Text("How can I help you today?")
-                        .padding(.horizontal, 5)
-                        .padding(.vertical, 5)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 8)
                         .foregroundStyle(.white)
+                        .opacity(0.7)
                     
                 }
                 TextEditor(text: $text)
                     .padding(.horizontal, 5)
-                    .padding(.vertical, 5)
+                    .padding(.vertical, 8)
                     .font(.headline)
                     .fontWeight(.regular)
+                    .scrollContentBackground(.hidden)
+                    .background(.clear)
             }
             .frame(maxWidth: .infinity, maxHeight: 75)
             .opacity(0.95)
