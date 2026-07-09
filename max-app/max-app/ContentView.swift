@@ -31,6 +31,7 @@ struct ContentView: View {
                 Label(Constants.settingsString, systemImage: Constants.settingsIconString)
                     .tag(Page.settings)
             }
+            .listStyle(.sidebar)
         } detail: {
             switch selected {
             case .home:

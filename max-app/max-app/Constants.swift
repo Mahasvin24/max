@@ -17,4 +17,10 @@ struct Constants {
     static let productivityIconString = "bolt.fill"
     static let settingsString = "Settings"
     static let settingsIconString = "gearshape.fill"
+    
+    // Chat page
+    static let logoString = "Logo"
+    
+    // User Info (temporary structure)
+    static let useNameString = "Mahasvin"
 }
