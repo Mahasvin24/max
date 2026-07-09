@@ -19,7 +19,7 @@ struct HomeView: View {
                     .scaledToFit()
                     .frame(maxWidth: 50, maxHeight: 50)
                 
-                Text("Hello, Mahasvin")
+                Text("Hello, \(Constants.useNameString)")
                     .font(.largeTitle)
             }
             
@@ -28,20 +28,22 @@ struct HomeView: View {
                 if text.isEmpty {
                     Text("How can I help you today?")
                         .padding(.horizontal, 8)
-                        .padding(.vertical, 8)
+                        .padding(.top, 20)
+                        .padding(.bottom, 8)
                         .foregroundStyle(.white)
                         .opacity(0.7)
                     
                 }
                 TextEditor(text: $text)
                     .padding(.horizontal, 5)
-                    .padding(.vertical, 8)
+                    .padding(.top, 20)
+                    .padding(.bottom, 8)
                     .font(.headline)
                     .fontWeight(.regular)
                     .scrollContentBackground(.hidden)
                     .background(.clear)
             }
-            .frame(maxWidth: .infinity, maxHeight: 75)
+            .frame(maxWidth: 675, maxHeight: 100)
             .opacity(0.95)
             .clipShape(RoundedRectangle(cornerRadius: 20))
             .padding(.horizontal, 30)
