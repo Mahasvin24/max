@@ -39,8 +39,8 @@ def create_messages_table(conn):
         CREATE TABLE IF NOT EXISTS messages (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             conversation_id INTEGER,
-            role STRING,
-            content STRING,
+            role TEXT,
+            content TEXT,
             created_at TEXT,
             FOREIGN KEY (conversation_id) REFERENCES conversations(id)
         )   
@@ -48,5 +48,6 @@ def create_messages_table(conn):
     conn.commit()
 
 if __name__ == "__main__":
+    drop_tables()
     create_tables()
 
