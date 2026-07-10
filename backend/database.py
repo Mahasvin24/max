@@ -1,21 +1,24 @@
 import sqlite3
 import config
 
-def create_tables() -> bool:
+""" db connection w/ setting applied"""
+def get_connection():
     conn = sqlite3.connect(config.DATABASE)
+    conn.execute("PRAGMA foreign_keys = ON") # setting: foreign_keys must exist
+    return conn
+
+""" high-level table creation and drop """
+def create_tables() -> bool:
+    conn = get_connection()
 
     # table creation helpers
     create_conversation_table(conn)
     create_messages_table(conn)
-
-    # setting: foreign_keys must exist
-    conn.execute("PRAGMA foreign_keys = ON")
     
     conn.close()
     return True # success
-
 def drop_tables() -> bool:
-    conn = sqlite3.connect(config.DATABASE)
+    conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("""DROP TABLE IF EXISTS conversations""")
     cursor.execute("""DROP TABLE IF EXISTS messages""")
@@ -23,6 +26,7 @@ def drop_tables() -> bool:
     conn.close()
     return True
 
+""" table creation helpers """
 def create_conversation_table(conn):
     cursor = conn.cursor()
     cursor.execute("""
@@ -32,7 +36,6 @@ def create_conversation_table(conn):
         )            
     """)
     conn.commit()
-
 def create_messages_table(conn):
     cursor = conn.cursor()
     cursor.execute("""
@@ -47,6 +50,7 @@ def create_messages_table(conn):
     """)
     conn.commit()
 
+""" testing """
 if __name__ == "__main__":
     drop_tables()
     create_tables()
