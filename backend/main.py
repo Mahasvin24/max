@@ -1,14 +1,11 @@
 from fastapi import FastAPI
-from pydantic import BaseModel
+from routers import chat
 
 app = FastAPI()
 
-
 @app.get("/health")
-def read_root():
+def health_check():
     return {"status": "ok"}
 
+app.include_router(chat.router)
 
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: str | None = None):
-    return {"item_id": item_id, "q": q}
