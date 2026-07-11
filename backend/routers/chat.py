@@ -1,6 +1,7 @@
 import ollama
 from fastapi import APIRouter
-from database import create
+from database import create_conversation, add_message
+from pydantic import BaseModel
 
 router = APIRouter()
 
@@ -19,7 +20,20 @@ router = APIRouter()
 # )
 # print(response["message"]["content"])
 
-@router.get("/create-conversation-id")
+@router.post("/conversations")
 def create_conversation_id():
-    return 
+    return create_conversation()
+
+class Message(BaseModel):
+    conversation_id: int
+    role: str
+    content: str
+
+@router.post("/messages")
+def create_message(message: Message):
+    # add user message to table
+    add_message(message.conversation_id, message.role, message.content)
+
+    # series of all messages
+    messages = messages_for_id(message.conversation_id)
 
