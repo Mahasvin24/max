@@ -63,15 +63,24 @@ def create_conversation() -> int:
     conversation_id = cursor.lastrowid
     conn.close()
     return conversation_id
-def add_message(conversation_id, role, content):
+def add_message(conversation_id: int, role: str, content: str) -> dict[str, Any]:
     conn = _get_connection()
     cursor = conn.cursor()
+    time = _get_time()
     cursor.execute(
         "INSERT INTO messages (conversation_id, role, content, created_at) VALUES (?, ?, ?, ?)",
-        (conversation_id, role, content, _get_time())
+        (conversation_id, role, content, time)
     )
+    id = cursor.lastrowid
     conn.commit()
     conn.close()
+    return {
+        "conversation_id": conversation_id,
+        "id": id,
+        "role": role,
+        "content": content,
+        "created_at": time
+    }
 def messages_for_id(conversation_id) -> list[dict[str, str]]:
     conn = _get_connection()
     conn.row_factory = sqlite3.Row # setting to return as dict rather than tuple, method specific

@@ -1,25 +1,11 @@
 import ollama
-import config
 from fastapi import APIRouter
-from database import create_conversation, add_message, messages_for_id
 from pydantic import BaseModel
 
+import config
+from database import create_conversation, add_message, messages_for_id
+
 router = APIRouter()
-
-# Router Example Usage
-#
-# @router.post("/chat")
-# def send_message(...):
-
-# Ollama example usage
-#
-# response = ollama.chat(
-#     model="llama3",
-#     messages=[
-#         {"role": "user", "content": "Hello"},
-#     ],
-# )
-# print(response["message"]["content"])
 
 @router.post("/conversations")
 def create_conversation_id():
@@ -28,6 +14,13 @@ def create_conversation_id():
 class Message(BaseModel):
     conversation_id: int
     content: str
+
+class MessageResponse(BaseModel):
+    conversation_id: int
+    id: int
+    role: str
+    content: str
+    created_at: str
 
 @router.post("/messages")
 def send_message(message: Message):
