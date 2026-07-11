@@ -1,6 +1,6 @@
 import ollama
 from fastapi import APIRouter
-from database import create_conversation, add_message
+from database import create_conversation, add_message, messages_for_id
 from pydantic import BaseModel
 
 router = APIRouter()

@@ -72,6 +72,18 @@ def add_message(conversation_id, role, content):
     )
     conn.commit()
     conn.close()
+def messages_for_id(conversation_id) -> list[dict[str, str]]:
+    conn = _get_connection()
+    conn.row_factory = sqlite3.Row # setting to return as dict rather than tuple, method specific
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT role, content FROM messages WHERE conversation_id = ? ORDER BY id",
+        (conversation_id,)
+    )
+    messages = cursor.fetchall()
+    conn.close()
+    return [dict(row) for row in messages]
+    
 
 """ testing """
 if __name__ == "__main__":
