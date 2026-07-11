@@ -1,4 +1,6 @@
+import ollama
 from fastapi import APIRouter
+from database import create
 
 router = APIRouter()
 
@@ -19,5 +21,5 @@ router = APIRouter()
 
 @router.get("/create-conversation-id")
 def create_conversation_id():
-    pass
+    return 
 
