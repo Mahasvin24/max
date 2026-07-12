@@ -93,7 +93,6 @@ def messages_for_id(conversation_id) -> list[dict[str, str]]:
     conn.close()
     return [dict(row) for row in messages]
     
-
 """ testing """
 if __name__ == "__main__":
     drop_tables()
