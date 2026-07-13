@@ -5,6 +5,10 @@ class Conversation(BaseModel):
     created_at: str
     updated_at: str
 
+class ConversationList(BaseModel):
+    conversations: list[Conversation]
+    count: int
+
 class Message(BaseModel):
     conversation_id: int
     content: str

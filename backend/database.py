@@ -56,7 +56,7 @@ def _create_messages_table(conn):
     conn.commit()
 
 """ basic conversation methods """
-def create_conversation() -> int:
+def create_conversation() -> dict[str, Any]:
     conn = _get_connection()
     cursor = conn.cursor()
     time = _get_time()
@@ -90,7 +90,7 @@ def add_message(conversation_id: int, role: str, content: str) -> dict[str, Any]
         "content": content,
         "created_at": time
     }
-def messages_for_id(conversation_id) -> list[dict[str, str]]:
+def messages_for_id(conversation_id: int) -> list[dict[str, str]]:
     conn = _get_connection()
     cursor = conn.cursor()
     cursor.execute(
@@ -100,13 +100,17 @@ def messages_for_id(conversation_id) -> list[dict[str, str]]:
     messages = cursor.fetchall()
     conn.close()
     return [dict(row) for row in messages]
-def get_all_conversations():
+def get_all_conversations() -> list[dict[str, Any]]:
     conn = _get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT (id, created_at) FROM conversations ORDER BY created_at")
-    ids = cursor.fetchall()
+    cursor.execute("SELECT id, created_at, updated_at FROM conversations ORDER BY updated_at")
+    rows = cursor.fetchall()
     conn.close()
-    return [row["id"] for row in ids]
+    return [{
+        "conversation_id": row["id"],
+        "created_at": row["created_at"],
+        "updated_at": row["updated_at"]
+    } for row in rows]
 
 """ testing """
 if __name__ == "__main__":

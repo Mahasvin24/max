@@ -2,15 +2,19 @@ import ollama
 from fastapi import APIRouter
 
 import config
-from database import create_conversation, add_message, messages_for_id
-from schemas import Conversation, Message, MessageResponse
+from database import create_conversation, get_all_conversations, add_message, messages_for_id
+from schemas import Conversation, ConversationList, Message, MessageResponse
 
 router = APIRouter()
 
 """ List of all conversation ids """
-@router.get("/conversation-ids")
+@router.get("/all-conversations", response_model=ConversationList)
 def get_conversations():
-    return 
+    conversations = get_all_conversations()
+    return {
+        "conversations": conversations,
+        "count": len(conversations)
+    }
 
 """ Create a new conversation """
 @router.post("/conversations", response_model=Conversation)
