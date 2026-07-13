@@ -8,6 +8,7 @@ import config
 def _get_connection():
     conn = sqlite3.connect(config.DATABASE)
     conn.execute("PRAGMA foreign_keys = ON") # setting: foreign_keys must exist
+    conn.row_factory = sqlite3.Row # setting: rows are return as dicts instead of tuple pairs
     return conn
 def _get_time():
     return datetime.now().isoformat()
@@ -35,7 +36,8 @@ def _create_conversations_table(conn):
     cursor.execute("""
        CREATE TABLE IF NOT EXISTS conversations (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            created_at TEXT
+            created_at TEXT,
+            updated_at TEXT
         )            
     """)
     conn.commit()
@@ -57,14 +59,19 @@ def _create_messages_table(conn):
 def create_conversation() -> int:
     conn = _get_connection()
     cursor = conn.cursor()
+    time = _get_time()
     cursor.execute(
-        "INSERT INTO conversations (created_at) VALUES (?)",
-        (_get_time(),) # isoformat converts to string from datetime obj
+        "INSERT INTO conversations (created_at, updated_at) VALUES (?, ?)",
+        (time, time) # isoformat converts to string from datetime obj
     )
     conn.commit()
     conversation_id = cursor.lastrowid
     conn.close()
-    return conversation_id
+    return {
+        "conversation_id": conversation_id,
+        "created_at": time,
+        "updated_at": time 
+    }
 def add_message(conversation_id: int, role: str, content: str) -> dict[str, Any]:
     conn = _get_connection()
     cursor = conn.cursor()
@@ -85,7 +92,6 @@ def add_message(conversation_id: int, role: str, content: str) -> dict[str, Any]
     }
 def messages_for_id(conversation_id) -> list[dict[str, str]]:
     conn = _get_connection()
-    conn.row_factory = sqlite3.Row # setting to return as dict rather than tuple, method specific
     cursor = conn.cursor()
     cursor.execute(
         "SELECT role, content FROM messages WHERE conversation_id = ? ORDER BY id",
@@ -94,7 +100,14 @@ def messages_for_id(conversation_id) -> list[dict[str, str]]:
     messages = cursor.fetchall()
     conn.close()
     return [dict(row) for row in messages]
-    
+def get_all_conversations():
+    conn = _get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT (id, created_at) FROM conversations ORDER BY created_at")
+    ids = cursor.fetchall()
+    conn.close()
+    return [row["id"] for row in ids]
+
 """ testing """
 if __name__ == "__main__":
     drop_tables()
