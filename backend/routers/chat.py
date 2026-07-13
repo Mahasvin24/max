@@ -11,6 +11,10 @@ router = APIRouter()
 def create_conversation_id():
     return create_conversation()
 
+@router.get("/conversations")
+def get_full_conversation(conversation_id: int):
+    return messages_for_id(conversation_id)
+
 @router.post("/messages", response_model=MessageResponse)
 def send_message(message: Message):
     # add user message to table
