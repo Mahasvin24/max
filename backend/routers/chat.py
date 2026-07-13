@@ -9,7 +9,7 @@ router = APIRouter()
 
 """ List of all conversation ids """
 @router.get("/all-conversations", response_model=ConversationList)
-def get_conversations():
+def get_conversation_history():
     conversations = get_all_conversations()
     return {
         "conversations": conversations,
