@@ -11,7 +11,7 @@ router = APIRouter()
 def create_conversation_id():
     return create_conversation()
 
-@router.post("/messages")
+@router.post("/messages", response_model=MessageResponse)
 def send_message(message: Message):
     # add user message to table
     add_message(message.conversation_id, "user", message.content)
@@ -20,9 +20,9 @@ def send_message(message: Message):
     response = ollama.chat(model=config.MODEL, messages=messages)
     content = response["message"]["content"]
 
-    add_message(message.conversation_id, "assistant", content)
+    obj = add_message(message.conversation_id, "assistant", content)
 
-    return content
+    return obj
 
 
 

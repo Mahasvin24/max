@@ -1,6 +1,8 @@
 import sqlite3
-import config
 from datetime import datetime
+from typing import Any
+
+import config
 
 """ helpers """
 def _get_connection():
