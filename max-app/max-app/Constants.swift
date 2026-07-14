@@ -23,4 +23,7 @@ struct Constants {
     
     // User Info (temporary structure)
     static let useNameString = "Mahasvin"
+    
+    // API
+    static let baseURL = "http://127.0.0.1:8000"
 }
