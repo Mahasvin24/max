@@ -12,7 +12,6 @@ struct APIClient {
     // generic api request
     func request<Input: Encodable, Output: Decodable>(path: String, action: String, body: Input?) async throws -> Output {
         
-        // url
         guard let url = URL(string: "\(Constants.baseURL)\(path)") else {
             throw APIError.invalidURL
         }
@@ -20,14 +19,42 @@ struct APIClient {
         // create request
         var req = URLRequest(url: url)
         req.httpMethod = action
-        
         if let body {
             let encoder = JSONEncoder()
             encoder.keyEncodingStrategy = .convertToSnakeCase
-            req.httpBody = try encoder.encode(body)
+            do {
+                req.httpBody = try encoder.encode(body)
+            } catch {
+                throw APIError.encodingFailed(underlyingError: error)
+            }
             req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         }
         
-        let d
+        // make request
+        let result: Data
+        let response: URLResponse
+        do {
+            (result, response) = try await URLSession.shared.data(for: req)
+        } catch {
+            throw APIError.connectionFailed
+        }
+        
+        // status code check
+        guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+            let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
+            throw APIError.requestFailed(statusCode: statusCode)
+        }
+        
+        // decode
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        let obj: Output
+        do {
+            obj = try decoder.decode(Output.self, from: result)
+        } catch {
+            throw APIError.decodingFailed(underlyingError: error)
+        }
+        
+        return obj
     }
 }

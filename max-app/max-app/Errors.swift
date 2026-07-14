@@ -12,6 +12,7 @@ enum APIError: Error, LocalizedError {
     case invalidURL
     case requestFailed(statusCode: Int)
     case decodingFailed(underlyingError: Error)
+    case encodingFailed(underlyingError: Error)
     
     var errorDescription: String? {
         switch self {
@@ -21,6 +22,8 @@ enum APIError: Error, LocalizedError {
             return "Request failed: url is invalid."
         case .requestFailed(let statusCode):
             return "Request failed with status code \(statusCode)"
+        case .encodingFailed(let error):
+            return "Request failed: failed to encode result. \(error)"
         case .decodingFailed(let error):
             return "Request failed: failed to decode result. \(error)"
         }
