@@ -14,7 +14,7 @@ struct ChatBox: View {
         VStack(alignment: .leading, spacing: 0) {
             ZStack(alignment: .topLeading) {
                 if text.isEmpty {
-                    Text("Type / for skills")
+                    Text(Constants.chatPlaceholderString)
                         .font(.system(size: 14))
                         .foregroundStyle(.secondary)
                         .padding(.leading, 5)
@@ -34,7 +34,7 @@ struct ChatBox: View {
             HStack {
                 Button {
                 } label: {
-                    Image(systemName: "plus")
+                    Image(systemName: Constants.plusIconString)
                         .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)
@@ -43,14 +43,14 @@ struct ChatBox: View {
 
                 Button {
                 } label: {
-                    Image(systemName: "mic")
+                    Image(systemName: Constants.micIconString)
                         .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)
 
                 Button {
                 } label: {
-                    Image(systemName: "arrow.up.circle.fill")
+                    Image(systemName: Constants.sendIconString)
                         .font(.system(size: 20))
                 }
                 .buttonStyle(.plain)

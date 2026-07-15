@@ -22,7 +22,6 @@ struct HomeView: View {
                         .font(.largeTitle)
                 }
                 
-                // textarea
                 ChatBox()
                 .frame(width: 0.7 * geo.size.width, height: 0.2 * geo.size.height)
 

@@ -33,4 +33,11 @@ struct Constants {
         static let PATCH = "PATCH"
         static let DELETE = "DELETE"
     }
+    
+    // one time use
+    static let chatPlaceholderString = "Type / for skills"
+    static let plusIconString = "plus"
+    static let micIconString = "mic"
+    static let sendIconString = "arrow.up.circle.fill"
+    
 }
