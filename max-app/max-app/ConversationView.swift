@@ -1,18 +1,18 @@
 //
-//  ChatView.swift
+//  ConversationView.swift
 //  max-app
 //
-//  Created by Mahasvin Shanmugapriya Manikandan on 7/8/26.
+//  Created by Mahasvin Shanmugapriya Manikandan on 7/13/26.
 //
 
 import SwiftUI
 
-struct ChatView: View {
+struct ConversationView: View {
     var body: some View {
         Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
     }
 }
 
 #Preview {
-    ChatView()
+    ConversationView()
 }
