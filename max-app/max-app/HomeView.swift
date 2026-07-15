@@ -8,8 +8,6 @@
 import SwiftUI
 
 struct HomeView: View {
-    @State private var text: String = ""
-    
     var body: some View {
         GeometryReader { geo in
             VStack {
@@ -25,34 +23,61 @@ struct HomeView: View {
                 }
                 
                 // textarea
-                VStack {
-                    TextEditor(text: $text)
-                        .frame(width: .infinity, height: .infinity)
-                        .scrollContentBackground(.hidden)
-                        .background(.black)
-                        .padding(.vertical, 3)
-                        .padding(.horizontal, 8)
-                    
+                VStack(alignment: .leading, spacing: 0) {
+                    ZStack(alignment: .topLeading) {
+                        if text.isEmpty {
+                            Text("Type / for skills")
+                                .font(.system(size: 14))
+                                .foregroundStyle(.secondary)
+                                .padding(.leading, 5)
+                        }
+                        TextEditor(text: $text)
+                            .font(.system(size: 14))
+                            .foregroundStyle(.primary)
+                        
+                            .scrollContentBackground(.hidden)
+                            .background(.clear)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .padding(.horizontal, 12)
+                    .padding(.top, 12)
+
                     // action items
                     HStack {
                         Button {
                         } label: {
-                            Text("Send")
+                            Image(systemName: "plus")
+                                .foregroundStyle(.secondary)
                         }
-                        .background(.blue)
-                        .clipShape(RoundedRectangle(cornerRadius: 5))
+                        .buttonStyle(.plain)
+
+                        Spacer()
+
+                        Button {
+                        } label: {
+                            Image(systemName: "mic")
+                                .foregroundStyle(.secondary)
+                        }
+                        .buttonStyle(.plain)
+
+                        Button {
+                        } label: {
+                            Image(systemName: "arrow.up.circle.fill")
+                                .font(.system(size: 20))
+                        }
+                        .buttonStyle(.plain)
                     }
-                        
+                    .padding(.horizontal, 14)
+                    .frame(height: 44)
                 }
-                .frame(width: 0.7 * geo.size.width, height: 0.2 * geo.size.height)
-                .opacity(0.95)
-                .background(.white)
-                .clipShape(RoundedRectangle(cornerRadius: 15))
+                .frame(width: 0.7 * geo.size.width, height: 0.25 * geo.size.height)
+                .background(Color(white: 0.15))
+                .clipShape(RoundedRectangle(cornerRadius: 20))
                 .overlay(
                     RoundedRectangle(cornerRadius: 20)
-                        .stroke(Color.white, lineWidth: 1)
+                        .stroke(Color.white.opacity(0.15), lineWidth: 1)
                 )
-                
+
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
