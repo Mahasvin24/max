@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ChatBox: View {
-    @State private var text: String = ""
+    @Binding var text: String
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -69,5 +69,6 @@ struct ChatBox: View {
 }
 
 #Preview {
-    ChatBox()
+    @Previewable @State var text = ""
+    ChatBox(text: $text)
 }
