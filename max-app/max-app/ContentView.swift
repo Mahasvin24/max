@@ -36,10 +36,13 @@ struct ContentView: View {
             switch selected {
             case .home:
                 HomeView()
+                    .frame(minWidth: 500, minHeight: 300)
             case .productivity:
                 ProductivityView()
+                    .frame(minWidth: 500, minHeight: 300)
             case .settings:
                 SettingsView()
+                    .frame(minWidth: 500, minHeight: 300)
             }
         }
     }
