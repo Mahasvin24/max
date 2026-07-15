@@ -11,48 +11,50 @@ struct HomeView: View {
     @State private var text: String = ""
     
     var body: some View {
-        VStack {
-            // logo + welcome message
-            HStack {
-                Image(Constants.logoString)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(maxWidth: 50, maxHeight: 50)
-                
-                Text("Hello, \(Constants.useNameString)")
-                    .font(.largeTitle)
-            }
-            
-            // textarea
-            ZStack(alignment: .topLeading) {
-                if text.isEmpty {
-                    Text("How can I help you today?")
-                        .padding(.horizontal, 8)
-                        .padding(.top, 20)
-                        .padding(.bottom, 8)
-                        .foregroundStyle(.white)
-                        .opacity(0.7)
+        GeometryReader { geo in
+            VStack {
+                // logo + welcome message
+                HStack {
+                    Image(Constants.logoString)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxWidth: 50, maxHeight: 50)
                     
+                    Text("Hello, \(Constants.useNameString)")
+                        .font(.largeTitle)
                 }
-                TextEditor(text: $text)
-                    .padding(.horizontal, 5)
-                    .padding(.top, 20)
-                    .padding(.bottom, 8)
-                    .font(.headline)
-                    .fontWeight(.regular)
-                    .scrollContentBackground(.hidden)
-                    .background(.clear)
+                
+                // textarea
+                VStack {
+                    TextEditor(text: $text)
+                        .frame(width: .infinity, height: .infinity)
+                        .scrollContentBackground(.hidden)
+                        .background(.black)
+                        .padding(.vertical, 3)
+                        .padding(.horizontal, 8)
+                    
+                    // action items
+                    HStack {
+                        Button {
+                        } label: {
+                            Text("Send")
+                        }
+                        .background(.blue)
+                        .clipShape(RoundedRectangle(cornerRadius: 5))
+                    }
+                        
+                }
+                .frame(width: 0.7 * geo.size.width, height: 0.2 * geo.size.height)
+                .opacity(0.95)
+                .background(.white)
+                .clipShape(RoundedRectangle(cornerRadius: 15))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(Color.white, lineWidth: 1)
+                )
+                
             }
-            .frame(maxWidth: 675, maxHeight: 100)
-            .opacity(0.95)
-            .clipShape(RoundedRectangle(cornerRadius: 20))
-            .padding(.horizontal, 30)
-            .overlay(
-                RoundedRectangle(cornerRadius: 10)
-                    .stroke(Color.gray.opacity(0.4), lineWidth: 1)
-                    .frame(maxWidth: .infinity, maxHeight: 75)
-                    .padding(.horizontal, 30)
-            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
 }
