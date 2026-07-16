@@ -71,7 +71,7 @@ struct ChatBox: View {
 }
 
 // no longer previewable
-// to many fake dependencies (text str, send function)
+// too many fake dependencies (text str, send function)
 // for it to be woorth maintaining
 //
 // preview instead: ChatView.swift

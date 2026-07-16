@@ -51,7 +51,8 @@ class ChatViewModel {
     // Calls: POST /conversations
     func createConversation() async {
         guard let response: Conversation = await callAPI(
-            action: Constants.API.POST, path: "/conversations"
+            action: Constants.API.POST, 
+            path: "/conversations"
         ) else {
             print("Failed to create conversation.")
             return
@@ -63,8 +64,7 @@ class ChatViewModel {
     func fetchConversation() async {
         guard let response: [MessageResponse] = await callAPI(
             action: Constants.API.GET,
-            path: "/conversations",
-            body: conversation.conversationId
+            path: "/conversations?conversation_id=\(conversation.conversationId)",
         ) else {
             print("Failed to fetch conversation for id \(conversation.conversationId).")
             return

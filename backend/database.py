@@ -94,7 +94,7 @@ def messages_for_id(conversation_id: int) -> list[dict[str, str]]:
     conn = _get_connection()
     cursor = conn.cursor()
     cursor.execute(
-        "SELECT role, content FROM messages WHERE conversation_id = ? ORDER BY id",
+        "SELECT conversation_id, id, role, content, created_at FROM messages WHERE conversation_id = ? ORDER BY id",
         (conversation_id,)
     )
     messages = cursor.fetchall()
