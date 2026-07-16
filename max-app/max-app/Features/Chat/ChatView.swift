@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ChatView: View {
+    let viewModel = ChatViewModel()
     
     var body: some View {
         GeometryReader { geo in
@@ -28,6 +29,9 @@ struct ChatView: View {
 
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .task {
+                await viewModel.getAllConversations()
+            }
         }
     }
 }

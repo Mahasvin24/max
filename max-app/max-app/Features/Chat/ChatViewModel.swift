@@ -11,8 +11,8 @@ import Foundation
 class ChatViewModel {
     // data
     var allConversations: ConversationList = ConversationList(conversations: [], count: 0)
-    var conversation: [MessageResponse]? = []
     var currentConversationId = -1
+    var conversation: [MessageResponse] = []
     
     
     // status monitoring
@@ -24,11 +24,20 @@ class ChatViewModel {
     }
     private(set) var conversationsStatus: FetchStatus = .notStarted
     
+    // RENAME to a better name later
+    func reset() {
+        currentConversationId = -1
+        conversation = []
+    }
+    
+    //
+    // GET /all-conversations
+    //
     func getAllConversations() async {
         conversationsStatus = .fetching
         do {
             allConversations = try await APIClient.request(
-                path: "/all-conversations", action: Constants.API.GET
+                action: Constants.API.GET, path: "/all-conversations"
             )
             conversationsStatus = .success
         } catch {
@@ -36,6 +45,23 @@ class ChatViewModel {
             conversationsStatus = .failed
             return
         }
-        conversationsStatus = .success
+    }
+    
+    //
+    // GET /conversations
+    //
+    func getConversation(id: Int) async {
+        conversationsStatus = .fetching
+        do {
+            allConversations = try await APIClient.request(
+                action: Constants.API.GET, path: "/conversations"
+            )
+            currentConversationId = id
+            conversationsStatus = .success
+        } catch {
+            print(error)
+            conversationsStatus = .failed
+            return
+        }
     }
 }
