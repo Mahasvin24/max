@@ -14,7 +14,6 @@ class ChatViewModel {
     var currentConversationId = -1
     var conversation: [MessageResponse] = []
     
-    
     // status monitoring
     enum FetchStatus {
         case notStarted
@@ -23,6 +22,7 @@ class ChatViewModel {
         case failed
     }
     private(set) var conversationListStatus: FetchStatus = .notStarted
+    
     
     // RENAME to a better name later
     func reset() {
@@ -71,5 +71,34 @@ class ChatViewModel {
         } catch {
             print(error)
         }
+    }
+    
+    //
+    // API calling helpers
+    //
+    private func callAPI<Output: Decodable>(action: String, path: String, status: inout FetchStatus) async -> Output? {
+        status = .fetching
+        do {
+            let res: Output = try await APIClient.request(
+                action: action, path: path
+            )
+            status = .success
+            return res
+        } catch {
+            print(error)
+            status = .failed
+        }
+        return nil
+    }
+    private func callAPI<Output: Decodable>(action: String, path: String) async -> Output? {
+        do {
+            let res: Output = try await APIClient.request(
+                action: action, path: path
+            )
+            return res
+        } catch {
+            print(error)
+        }
+        return nil
     }
 }
