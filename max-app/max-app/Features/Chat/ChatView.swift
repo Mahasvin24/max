@@ -35,8 +35,12 @@ struct ChatView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .task {
-                let res = await APIClient.checkConnectionHealth()
-                print("[\(Date.now.formatted(date: .omitted, time: .shortened))] Connecetion is healthy? \(res)")
+                // health check
+                let time = Date.now.formatted(date: .omitted, time: .shortened)
+                let isHealthy = await APIClient.checkConnectionHealth()
+                print("[\(time)] Connection is healthy? \(isHealthy)")
+                
+                await viewModel.refresh()
             }
         }
     }

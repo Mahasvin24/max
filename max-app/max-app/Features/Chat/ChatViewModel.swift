@@ -23,11 +23,10 @@ class ChatViewModel {
     }
     private(set) var conversationListStatus: FetchStatus = .notStarted
     
-    
-    // RENAME to a better name later
-    func reset() {
+    func refresh() async {
         conversationId = -1
         conversation = []
+        await fetchAllConversations()
     }
     
     // Calls: GET /all-conversations
