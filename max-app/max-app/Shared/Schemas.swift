@@ -12,23 +12,23 @@ import Foundation
 // instead of just saying codable for everything (just for precision)
 //
 
-struct Conversation: Codable {
+nonisolated struct Conversation: Codable {
     let conversationId: Int
     let createdAt: String
     let updatedAt: String
 }
 
-struct ConversationList: Codable {
+nonisolated struct ConversationList: Codable {
     let conversations: [Conversation]
     let count: Int
 }
 
-struct Message: Codable {
+nonisolated struct Message: Codable {
     let conversationId: Int
     let content: String
 }
 
-struct MessageResponse: Codable {
+nonisolated struct MessageResponse: Codable {
     let conversationId: Int
     let id: Int
     let role: String
