@@ -9,7 +9,7 @@ import Foundation
 
 struct APIClient {
     // generic api request (has a body)
-    func request<Input: Encodable, Output: Decodable>(path: String, action: String, body: Input?) async throws -> Output {
+    static func request<Input: Encodable, Output: Decodable>(path: String, action: String, body: Input?) async throws -> Output {
         
         guard let url = URL(string: "\(Constants.API.baseURL)\(path)") else {
             throw APIError.invalidURL
@@ -60,7 +60,7 @@ struct APIClient {
     
     // generic api request (no body)
     private struct EmptyBody: Encodable {}
-    func request<Output: Decodable>(path: String, action: String) async throws -> Output {
+    static func request<Output: Decodable>(path: String, action: String) async throws -> Output {
         try await request(path: path, action: action, body: EmptyBody?.none)
     }
 }

@@ -22,6 +22,10 @@ class ChatViewModel {
     }
     private(set) var conversationsStatus: FetchStatus = .notStarted
     
-
+    func getConversations() {
+        allConversations = try await APIClient.request(
+            path: "/all-conversations", action: Constants.API.GET
+        )
+    }
     
 }
