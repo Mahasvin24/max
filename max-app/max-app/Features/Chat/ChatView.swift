@@ -27,8 +27,9 @@ struct ChatView: View {
                 }
                 
                 ChatBox(text: $text, onSend: {
-                    // tbd
-                    print("Send message clicked!")
+                    print("Sending message...")
+                    Task { await viewModel.sendMessage(text: text) }
+                    print(viewModel.conversation)
                 })
                 .frame(width: 0.7 * geo.size.width, height: 0.2 * geo.size.height)
 

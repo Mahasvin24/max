@@ -10,9 +10,9 @@ import Foundation
 @Observable
 class ChatViewModel {
     // data
-    var conversationList: ConversationList = ConversationList(conversations: [], count: 0)
-    var conversationId = -1
-    var conversation: [MessageResponse] = []
+    var conversationList: ConversationList = ConversationList()
+    var conversation: Conversation = Conversation()
+    var messages: [MessageResponse] = []
     
     // status monitoring
     enum FetchStatus {
@@ -24,8 +24,8 @@ class ChatViewModel {
     private(set) var conversationListStatus: FetchStatus = .notStarted
     
     func refresh() async {
-        conversationId = -1
-        conversation = []
+        conversation = Conversation()
+        messages = []
         await fetchAllConversations()
     }
     
@@ -36,54 +36,59 @@ class ChatViewModel {
     // Calls: GET /all-conversations
     func fetchAllConversations() async {
         conversationListStatus = .fetching
-        guard let list: ConversationList = await callAPI(
+        guard let response: ConversationList = await callAPI(
             action: Constants.API.GET,
             path: "/all-conversations",
         ) else {
             conversationListStatus = .failed
+            print("Failed to fetch all conversations.")
             return
         }
-        conversationList = list
+        conversationList = response
         conversationListStatus = .success
     }
     
     // Calls: POST /conversations
     func createConversation() async {
-        guard let id: Int = await callAPI(
+        guard let response: Conversation = await callAPI(
             action: Constants.API.POST, path: "/conversations"
         ) else {
+            print("Failed to create conversation.")
             return
         }
-        conversationId = id
+        conversation = response
     }
     
     // Calls: GET /conversations
     func fetchConversation() async {
-        guard let convo: [MessageResponse] = await callAPI(
+        guard let response: [MessageResponse] = await callAPI(
             action: Constants.API.GET,
             path: "/conversations",
-            body: conversationId
+            body: conversation.conversationId
         ) else {
-            print("Failed to fetch conversation for id \(conversationId)")
+            print("Failed to fetch conversation for id \(conversation.conversationId).")
             return
         }
-        conversation = convo
+        messages = response
     }
     
     // Calls: POST /messages
     func sendMessage(text: String) async {
         // start new convo if needed
-        if conversationId == -1 {
+        if conversation.conversationId == -1 {
             await createConversation()
         }
         
         // call API
-        guard let message: MessageResponse = await callAPI(
+        // Note: we could be more efficient by just creating the two messages as MessageResponse types
+        // and appending that to the array. It's possibe then that we differ from server but I think
+        // that it could still be fine.
+        guard let _: MessageResponse = await callAPI(
             action: Constants.API.POST,
             path: "/messages",
-            body: Message(conversationId: conversationId, content: text)
+            body: Message(conversationId: conversation.conversationId, content: text)
         ) else {
-            print("Failed to send message")
+            print("Failed to send message.")
             return
         }
         
@@ -102,8 +107,8 @@ class ChatViewModel {
             return res
         } catch {
             print(error.localizedDescription)
+            return nil
         }
-        return nil
     }
     private func callAPI<Output: Decodable>(action: String, path: String) async -> Output? {
         do {
@@ -113,7 +118,7 @@ class ChatViewModel {
             return res
         } catch {
             print(error.localizedDescription)
+            return nil
         }
-        return nil
     }
 }

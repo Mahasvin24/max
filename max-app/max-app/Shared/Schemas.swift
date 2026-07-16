@@ -13,29 +13,29 @@ import Foundation
 //
 
 nonisolated struct Conversation: Codable {
-    let conversationId: Int
-    let createdAt: String
-    let updatedAt: String
+    var conversationId: Int = -1
+    var createdAt: String = ""
+    var updatedAt: String = ""
 }
 
 nonisolated struct ConversationList: Codable {
-    let conversations: [Conversation]
-    let count: Int
+    var conversations: [Conversation] = []
+    var count: Int = 0
 }
 
 nonisolated struct Message: Codable {
-    let conversationId: Int
-    let content: String
+    var conversationId: Int
+    var content: String
 }
 
 nonisolated struct MessageResponse: Codable {
-    let conversationId: Int
-    let id: Int
-    let role: String
-    let content: String
-    let createdAt: String
+    var conversationId: Int
+    var id: Int
+    var role: String
+    var content: String
+    var createdAt: String
 }
 
 nonisolated struct Health: Codable {
-    let status: String
+    var status: String
 }
