@@ -29,6 +29,10 @@ class ChatViewModel {
         await fetchAllConversations()
     }
     
+    //
+    // API Calls for ViewModel
+    //
+    
     // Calls: GET /all-conversations
     func fetchAllConversations() async {
         conversationListStatus = .fetching
@@ -54,17 +58,38 @@ class ChatViewModel {
     }
     
     // Calls: GET /conversations
-    func fetchConversation(id: Int) async {
+    func fetchConversation() async {
         guard let convo: [MessageResponse] = await callAPI(
             action: Constants.API.GET,
-            path: "/conversations"
+            path: "/conversations",
+            body: conversationId
         ) else {
+            print("Failed to fetch conversation for id \(conversationId)")
             return
         }
         conversation = convo
     }
     
-    
+    // Calls: POST /messages
+    func sendMessage(text: String) async {
+        // start new convo if needed
+        if conversationId == -1 {
+            await createConversation()
+        }
+        
+        // call API
+        guard let message: MessageResponse = await callAPI(
+            action: Constants.API.POST,
+            path: "/messages",
+            body: Message(conversationId: conversationId, content: text)
+        ) else {
+            print("Failed to send message")
+            return
+        }
+        
+        // refresh conversation log, server is source of truth
+        await fetchConversation()
+    }
     
     //
     // API calling helpers
@@ -91,5 +116,4 @@ class ChatViewModel {
         }
         return nil
     }
-    
 }
