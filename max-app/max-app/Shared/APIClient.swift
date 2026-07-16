@@ -16,7 +16,7 @@ struct APIClient {
                 action: Constants.API.GET, path: "/health"
             )
         } catch {
-            print(error)
+            print(error.localizedDescription)
             return false
         }
         return res.status == "ok"

@@ -77,7 +77,7 @@ class ChatViewModel {
             )
             return res
         } catch {
-            print(error)
+            print(error.localizedDescription)
         }
         return nil
     }
@@ -88,7 +88,7 @@ class ChatViewModel {
             )
             return res
         } catch {
-            print(error)
+            print(error.localizedDescription)
         }
         return nil
     }
