@@ -10,6 +10,8 @@ import SwiftUI
 struct ChatView: View {
     let viewModel = ChatViewModel()
     
+    @State private var text: String = ""
+    
     var body: some View {
         GeometryReader { geo in
             VStack {
@@ -24,7 +26,10 @@ struct ChatView: View {
                         .font(.largeTitle)
                 }
                 
-                ChatBox()
+                ChatBox(text: $text, onSend: {
+                    // tbd
+                    print("Send message clicked!")
+                })
                 .frame(width: 0.7 * geo.size.width, height: 0.2 * geo.size.height)
 
             }

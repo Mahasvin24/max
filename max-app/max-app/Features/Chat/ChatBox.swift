@@ -8,7 +8,8 @@
 import SwiftUI
 
 struct ChatBox: View {
-    @State private var text: String = ""
+    @Binding var text: String
+    var onSend: () -> Void
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -49,6 +50,7 @@ struct ChatBox: View {
                 .buttonStyle(.plain)
 
                 Button {
+                    onSend()
                 } label: {
                     Image(systemName: Constants.sendIconString)
                         .font(.system(size: 20))
@@ -68,6 +70,8 @@ struct ChatBox: View {
     }
 }
 
-#Preview {
-    ChatBox()
-}
+// no longer previewable
+// to many fake dependencies (text str, send function)
+// for it to be woorth maintaining
+//
+// preview instead: ChatView.swift

@@ -43,7 +43,6 @@ class ChatViewModel {
         } catch {
             print(error)
             conversationsStatus = .failed
-            return
         }
     }
     
@@ -61,7 +60,6 @@ class ChatViewModel {
         } catch {
             print(error)
             conversationsStatus = .failed
-            return
         }
     }
 }
