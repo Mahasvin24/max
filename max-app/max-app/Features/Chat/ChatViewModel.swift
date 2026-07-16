@@ -65,6 +65,8 @@ class ChatViewModel {
         conversation = convo
     }
     
+    
+    
     //
     // API calling helpers
     //

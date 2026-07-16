@@ -35,3 +35,7 @@ nonisolated struct MessageResponse: Codable {
     let content: String
     let createdAt: String
 }
+
+nonisolated struct Health: Codable {
+    let status: String
+}

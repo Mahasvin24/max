@@ -8,6 +8,20 @@
 import Foundation
 
 struct APIClient {
+    // health check
+    static func checkConnectionHealth() async -> Bool {
+        let res: Health
+        do {
+            res = try await request(
+                action: Constants.API.GET, path: "/health"
+            )
+        } catch {
+            print(error)
+            return false
+        }
+        return res.status == "ok"
+    }
+    
     // generic api request (has a body)
     static func request<Input: Encodable, Output: Decodable>(action: String, path: String, body: Input?) async throws -> Output {
         
