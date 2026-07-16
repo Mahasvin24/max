@@ -72,6 +72,17 @@ class ChatViewModel {
     //
     // API calling helper
     //
+    private func callAPI<Input: Encodable, Output: Decodable>(action: String, path: String, body: Input) async -> Output? {
+        do {
+            let res: Output = try await APIClient.request(
+                action: action, path: path, body: body
+            )
+            return res
+        } catch {
+            print(error)
+        }
+        return nil
+    }
     private func callAPI<Output: Decodable>(action: String, path: String) async -> Output? {
         do {
             let res: Output = try await APIClient.request(
@@ -83,4 +94,5 @@ class ChatViewModel {
         }
         return nil
     }
+    
 }
