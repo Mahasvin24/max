@@ -11,7 +11,7 @@ import Foundation
 class ChatViewModel {
     // data
     var conversationList: ConversationList = ConversationList(conversations: [], count: 0)
-    var currentConversationId = -1
+    var conversationId = -1
     var conversation: [MessageResponse] = []
     
     // status monitoring
@@ -26,7 +26,7 @@ class ChatViewModel {
     
     // RENAME to a better name later
     func reset() {
-        currentConversationId = -1
+        conversationId = -1
         conversation = []
     }
     
@@ -44,33 +44,29 @@ class ChatViewModel {
         conversationListStatus = .success
     }
     
-    // Calls: GET /conversations
-    func getConversation(id: Int) async {
-        do {
-            conversation = try await APIClient.request(
-                action: Constants.API.GET, path: "/conversations"
-            )
-            currentConversationId = id
-        } catch {
-            print(error)
-        }
-    }
-    
-    //
-    // POST /conversations
-    //
+    // Calls: POST /conversations
     func createConversation() async {
-        do {
-            currentConversationId = try await APIClient.request(
-                action: Constants.API.POST, path: "/conversations"
-            )
-        } catch {
-            print(error)
+        guard let id: Int = await callAPI(
+            action: Constants.API.POST, path: "/conversations"
+        ) else {
+            return
         }
+        conversationId = id
+    }
+    
+    // Calls: GET /conversations
+    func fetchConversation(id: Int) async {
+        guard let convo: [MessageResponse] = await callAPI(
+            action: Constants.API.GET,
+            path: "/conversations"
+        ) else {
+            return
+        }
+        conversation = convo
     }
     
     //
-    // API calling helper
+    // API calling helpers
     //
     private func callAPI<Input: Encodable, Output: Decodable>(action: String, path: String, body: Input) async -> Output? {
         do {
