@@ -10,7 +10,7 @@ import Foundation
 @Observable
 class ChatViewModel {
     // data
-    var allConversations: ConversationList = ConversationList(conversations: [], count: 0)
+    var conversationList: ConversationList = ConversationList(conversations: [], count: 0)
     var currentConversationId = -1
     var conversation: [MessageResponse] = []
     
@@ -22,7 +22,7 @@ class ChatViewModel {
         case success
         case failed
     }
-    private(set) var conversationsStatus: FetchStatus = .notStarted
+    private(set) var conversationListStatus: FetchStatus = .notStarted
     
     // RENAME to a better name later
     func reset() {
@@ -34,15 +34,15 @@ class ChatViewModel {
     // GET /all-conversations
     //
     func getAllConversations() async {
-        conversationsStatus = .fetching
+        conversationListStatus = .fetching
         do {
-            allConversations = try await APIClient.request(
+            conversationList = try await APIClient.request(
                 action: Constants.API.GET, path: "/all-conversations"
             )
-            conversationsStatus = .success
+            conversationListStatus = .success
         } catch {
             print(error)
-            conversationsStatus = .failed
+            conversationListStatus = .failed
         }
     }
     
@@ -50,16 +50,26 @@ class ChatViewModel {
     // GET /conversations
     //
     func getConversation(id: Int) async {
-        conversationsStatus = .fetching
         do {
-            allConversations = try await APIClient.request(
+            conversation = try await APIClient.request(
                 action: Constants.API.GET, path: "/conversations"
             )
             currentConversationId = id
-            conversationsStatus = .success
         } catch {
             print(error)
-            conversationsStatus = .failed
+        }
+    }
+    
+    //
+    // POST /conversations
+    //
+    func createConversation() async {
+        do {
+            currentConversationId = try await APIClient.request(
+                action: Constants.API.POST, path: "/conversations"
+            )
+        } catch {
+            print(error)
         }
     }
 }
