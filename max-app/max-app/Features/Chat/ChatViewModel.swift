@@ -30,25 +30,21 @@ class ChatViewModel {
         conversation = []
     }
     
-    //
-    // GET /all-conversations
-    //
-    func getAllConversations() async {
+    // Calls: GET /all-conversations
+    func fetchAllConversations() async {
         conversationListStatus = .fetching
-        do {
-            conversationList = try await APIClient.request(
-                action: Constants.API.GET, path: "/all-conversations"
-            )
-            conversationListStatus = .success
-        } catch {
-            print(error)
+        guard let list: ConversationList = await callAPI(
+            action: Constants.API.GET,
+            path: "/all-conversations",
+        ) else {
             conversationListStatus = .failed
+            return
         }
+        conversationList = list
+        conversationListStatus = .success
     }
     
-    //
-    // GET /conversations
-    //
+    // Calls: GET /conversations
     func getConversation(id: Int) async {
         do {
             conversation = try await APIClient.request(
@@ -74,22 +70,8 @@ class ChatViewModel {
     }
     
     //
-    // API calling helpers
+    // API calling helper
     //
-    private func callAPI<Output: Decodable>(action: String, path: String, status: inout FetchStatus) async -> Output? {
-        status = .fetching
-        do {
-            let res: Output = try await APIClient.request(
-                action: action, path: path
-            )
-            status = .success
-            return res
-        } catch {
-            print(error)
-            status = .failed
-        }
-        return nil
-    }
     private func callAPI<Output: Decodable>(action: String, path: String) async -> Output? {
         do {
             let res: Output = try await APIClient.request(
