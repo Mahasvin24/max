@@ -9,19 +9,19 @@ import SwiftUI
 
 struct ContentView: View {
     private enum Page {
-        case home
+        case chat
         case productivity
         case settings
     }
     
-    @State private var selected: Page = .home
+    @State private var selected: Page = .chat
     
     var body: some View {
         NavigationSplitView {
             List(selection: $selected) {
                 // chat
                 Label(Constants.chatString, systemImage: Constants.chatIconString)
-                    .tag(Page.home)
+                    .tag(Page.chat)
                 
                 // productivity
                 Label(Constants.productivityString, systemImage: Constants.productivityIconString)
@@ -34,8 +34,8 @@ struct ContentView: View {
             .listStyle(.sidebar)
         } detail: {
             switch selected {
-            case .home:
-                HomeView()
+            case .chat:
+                ChatView()
                     .frame(minWidth: 500, minHeight: 300)
             case .productivity:
                 ProductivityView()
