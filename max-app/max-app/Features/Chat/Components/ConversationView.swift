@@ -42,6 +42,7 @@ struct ConversationView: View {
                 }
             })
             .frame(width: 0.7 * geo.size.width, height: 0.2 * geo.size.height)
+            .padding(.bottom, 15)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
