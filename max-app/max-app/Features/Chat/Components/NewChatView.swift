@@ -27,7 +27,9 @@ struct NewChatView: View {
 
             ChatBox(text: $text, onSend: {
                 Task {
-                    await viewModel.sendMessage(text: text)
+                    let str: String = text
+                    text = ""
+                    await viewModel.sendMessage(text: str)
                 }
             })
             .frame(width: 0.7 * geo.size.width, height: 0.2 * geo.size.height)

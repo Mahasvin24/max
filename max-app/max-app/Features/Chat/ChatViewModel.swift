@@ -58,6 +58,7 @@ class ChatViewModel {
             return
         }
         conversation = response
+        await fetchAllConversations()
     }
     
     // Calls: GET /conversations
@@ -69,7 +70,11 @@ class ChatViewModel {
             print("Failed to fetch conversation for id \(id).")
             return
         }
-        conversation = conversationList.conversations[id - 1]
+        
+        guard let conversation = conversationList.conversations.first(where: { $0.conversationId == id }) else {
+            print("Unexpected: no error from fetchConversation(id: Int) but conversation not found in conversationList")
+            return
+        }
         messages = response
     }
     
