@@ -24,7 +24,11 @@ struct ConversationView: View {
                         }
                     }
                 }
-                .padding()
+                .frame(maxWidth: Constants.Design.maxContentWidth)
+                .padding(.horizontal)
+                .padding(.top, 24)
+                .padding(.bottom)
+                .frame(maxWidth: .infinity)
             }
 
             ChatBox(text: $text, onSend: {

@@ -35,6 +35,8 @@ struct ChatView: View {
                     }
                 } label: {
                     Image(systemName: "list.bullet")
+                        .font(.system(size: Constants.Design.iconSize))
+                        .foregroundStyle(.secondary)
                 }
             }
         }

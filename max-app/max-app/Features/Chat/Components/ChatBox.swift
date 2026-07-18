@@ -32,19 +32,26 @@ struct ChatBox: View {
             .padding(.top, 12)
 
             // action items
-            HStack {
+            HStack(spacing: 10) {
                 Button {
                 } label: {
                     Image(systemName: Constants.plusIconString)
+                        .font(.system(size: Constants.Design.iconSize))
                         .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)
+
+                // TODO: wire up to real mode/model selection
+                Text("Manual")
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
 
                 Spacer()
 
                 Button {
                 } label: {
                     Image(systemName: Constants.micIconString)
+                        .font(.system(size: Constants.Design.iconSize))
                         .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)
@@ -58,15 +65,15 @@ struct ChatBox: View {
                 .buttonStyle(.plain)
             }
             .padding(.horizontal, 14)
-            .frame(height: 44)
+            .frame(height: Constants.Design.bottomBarHeight)
         }
-        .background(Color(white: 0.15))
-        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .background(Constants.Design.surfaceColor)
+        .clipShape(RoundedRectangle(cornerRadius: Constants.Design.boxCornerRadius))
         .overlay(
-            RoundedRectangle(cornerRadius: 20)
-                .stroke(Color.white.opacity(0.15), lineWidth: 1)
+            RoundedRectangle(cornerRadius: Constants.Design.boxCornerRadius)
+                .stroke(Constants.Design.borderColor, lineWidth: 1)
         )
-        
+
     }
 }
 

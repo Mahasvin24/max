@@ -13,16 +13,17 @@ struct NewChatView: View {
     let geo: GeometryProxy
 
     var body: some View {
-        VStack {
+        VStack(spacing: 20) {
             // logo + welcome message
-            HStack {
+            HStack(spacing: 10) {
                 Image(Constants.logoString)
                     .resizable()
                     .scaledToFit()
-                    .frame(maxWidth: 50, maxHeight: 50)
+                    .frame(maxWidth: 36, maxHeight: 36)
 
                 Text("Hello, \(Constants.userNameString)")
-                    .font(.largeTitle)
+                    .font(.system(size: 22, weight: .medium))
+                    .foregroundStyle(.primary)
             }
 
             ChatBox(text: $text, onSend: {

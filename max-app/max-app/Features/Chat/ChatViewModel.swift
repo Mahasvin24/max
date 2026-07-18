@@ -71,10 +71,11 @@ class ChatViewModel {
             return
         }
         
-        guard let conversation = conversationList.conversations.first(where: { $0.conversationId == id }) else {
+        guard let newConvo = conversationList.conversations.first(where: { $0.conversationId == id }) else {
             print("Unexpected: no error from fetchConversation(id: Int) but conversation not found in conversationList")
             return
         }
+        conversation = newConvo
         messages = response
     }
     

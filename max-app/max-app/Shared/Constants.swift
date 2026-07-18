@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 struct Constants {
     static let maxString = "Max"
@@ -39,5 +40,21 @@ struct Constants {
     static let plusIconString = "plus"
     static let micIconString = "mic"
     static let sendIconString = "arrow.up.circle.fill"
-    
+
+    // Design tokens
+    struct Design {
+        // colors
+        static let surfaceColor = Color("SurfacePanel")
+        static let borderColor = Color("BorderSubtle")
+        static let userBubbleColor = Color("BubbleUser")
+
+        // corner radii
+        static let boxCornerRadius: CGFloat = 20
+        static let bubbleCornerRadius: CGFloat = 16
+
+        // spacing / sizing
+        static let bottomBarHeight: CGFloat = 44
+        static let iconSize: CGFloat = 16
+        static let maxContentWidth: CGFloat = 700
+    }
 }
