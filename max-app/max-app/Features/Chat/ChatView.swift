@@ -14,28 +14,7 @@ struct ChatView: View {
     
     var body: some View {
         GeometryReader { geo in
-            VStack {
-                // logo + welcome message
-                HStack {
-                    Image(Constants.logoString)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(maxWidth: 50, maxHeight: 50)
-                    
-                    Text("Hello, \(Constants.userNameString)")
-                        .font(.largeTitle)
-                }
-                
-                ChatBox(text: $text, onSend: {
-                    Task {
-                        await viewModel.sendMessage(text: text)
-                    }
-                    
-                })
-                .frame(width: 0.7 * geo.size.width, height: 0.2 * geo.size.height)
-
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            NewChatView(viewModel: viewModel, text: $text, geo: geo)
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Menu {
