@@ -7,10 +7,19 @@
 
 import SwiftUI
 
+// Scales down on press for instant, tactile feedback (Apple Fluid Interfaces: respond on press, not release)
+private struct PressableIconButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.96 : 1.0)
+            .animation(.spring(duration: 0.15), value: configuration.isPressed)
+    }
+}
+
 struct ChatBox: View {
     @Binding var text: String
     var onSend: () -> Void
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             ZStack(alignment: .topLeading) {
@@ -39,7 +48,7 @@ struct ChatBox: View {
                         .font(.system(size: Constants.Design.iconSize))
                         .foregroundStyle(.secondary)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(PressableIconButtonStyle())
 
                 // TODO: wire up to real mode/model selection
                 Text("Manual")
@@ -54,7 +63,7 @@ struct ChatBox: View {
                         .font(.system(size: Constants.Design.iconSize))
                         .foregroundStyle(.secondary)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(PressableIconButtonStyle())
 
                 Button {
                     onSend()
@@ -62,7 +71,7 @@ struct ChatBox: View {
                     Image(systemName: Constants.sendIconString)
                         .font(.system(size: 20))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(PressableIconButtonStyle())
             }
             .padding(.horizontal, 14)
             .frame(height: Constants.Design.bottomBarHeight)

@@ -23,6 +23,7 @@ struct NewChatView: View {
 
                 Text("Hello, \(Constants.userNameString)")
                     .font(.system(size: 22, weight: .medium))
+                    .tracking(-0.3)
                     .foregroundStyle(.primary)
             }
 

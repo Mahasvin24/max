@@ -12,13 +12,19 @@ struct ChatView: View {
     
     @State private var text: String = ""
     
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     var body: some View {
         GeometryReader { geo in
-            if viewModel.conversation.conversationId == Conversation().conversationId {
-                NewChatView(viewModel: viewModel, text: $text, geo: geo)
-            } else {
-                ConversationView(viewModel: viewModel, text: $text, geo: geo)
+            Group {
+                if viewModel.conversation.conversationId == Conversation().conversationId {
+                    NewChatView(viewModel: viewModel, text: $text, geo: geo)
+                } else {
+                    ConversationView(viewModel: viewModel, text: $text, geo: geo)
+                }
             }
+            .transition(.opacity)
+            .animation(reduceMotion ? .easeInOut(duration: 0.2) : .spring(duration: 0.4, bounce: 0), value: viewModel.conversation.conversationId)
         }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {

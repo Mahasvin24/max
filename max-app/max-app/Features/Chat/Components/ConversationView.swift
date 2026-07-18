@@ -12,6 +12,8 @@ struct ConversationView: View {
     @Binding var text: String
     let geo: GeometryProxy
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     var body: some View {
         VStack {
             ScrollView {
@@ -29,6 +31,7 @@ struct ConversationView: View {
                 .padding(.top, 24)
                 .padding(.bottom)
                 .frame(maxWidth: .infinity)
+                .animation(reduceMotion ? .easeInOut(duration: 0.2) : .spring(duration: 0.4, bounce: 0), value: viewModel.messages.count)
             }
 
             ChatBox(text: $text, onSend: {
