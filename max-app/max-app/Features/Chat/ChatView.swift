@@ -22,12 +22,11 @@ struct ChatView: View {
                         .scaledToFit()
                         .frame(maxWidth: 50, maxHeight: 50)
                     
-                    Text("Hello, \(Constants.useNameString)")
+                    Text("Hello, \(Constants.userNameString)")
                         .font(.largeTitle)
                 }
                 
                 ChatBox(text: $text, onSend: {
-                    print("Sending message...")
                     Task {
                         await viewModel.sendMessage(text: text)
                     }
@@ -37,6 +36,24 @@ struct ChatView: View {
 
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Menu {
+                        ForEach(
+                            viewModel.conversationList.conversations,
+                            id: \.conversationId)
+                        { convo in
+                            Button("\(convo.conversationId)") {
+                                Task {
+                                    await viewModel.fetchConversation(id: convo.conversationId)
+                                }
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "list.bullet")
+                    }
+                }
+            }
             .task {
                 // health check
                 let time = Date.now.formatted(date: .omitted, time: .shortened)

@@ -22,7 +22,7 @@ struct Constants {
     static let logoString = "Logo"
     
     // User Info (temporary structure)
-    static let useNameString = "Mahasvin"
+    static let userNameString = "Mahasvin"
     
     // API
     struct API {

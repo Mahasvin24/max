@@ -61,14 +61,15 @@ class ChatViewModel {
     }
     
     // Calls: GET /conversations
-    func fetchConversation() async {
+    func fetchConversation(id: Int) async {
         guard let response: [MessageResponse] = await callAPI(
             action: Constants.API.GET,
-            path: "/conversations?conversation_id=\(conversation.conversationId)",
+            path: "/conversations?conversation_id=\(id)",
         ) else {
-            print("Failed to fetch conversation for id \(conversation.conversationId).")
+            print("Failed to fetch conversation for id \(id).")
             return
         }
+        conversation = conversationList.conversations[id - 1]
         messages = response
     }
     
@@ -93,7 +94,7 @@ class ChatViewModel {
         }
         
         // refresh conversation log, server is source of truth
-        await fetchConversation()
+        await fetchConversation(id: conversation.conversationId)
     }
     
     //
