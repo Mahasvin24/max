@@ -11,9 +11,13 @@ struct AgentMessage: View {
     let content: String
 
     var body: some View {
-        if let atrributed = try? AttributedString(markdown: content) {
+        if let atrributed = try? AttributedString(
+            markdown: content,
+            options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnlyPreservingWhitespace)
+        ) {
             Text(atrributed)
                 .task {
+                    // DEBUG
                     print("- - - - - - - - - - - - - - - -")
                     print(content)
                     print("- - - - - - - - - - - - - - - -")
@@ -26,6 +30,7 @@ struct AgentMessage: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.vertical, 10)
                 .task {
+                    // DEBUG
                     print("regular string :(")
                 }
         }
