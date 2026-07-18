@@ -11,16 +11,11 @@ struct AgentMessage: View {
     let content: String
 
     var body: some View {
-        HStack {
-            Text(content)
-                .font(.system(size: 14))
-                .foregroundStyle(.primary)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 10)
-                .background(Color(white: 0.15))
-                .clipShape(RoundedRectangle(cornerRadius: 16))
-            Spacer(minLength: 40)
-        }
+        Text(content)
+            .font(.system(size: 14))
+            .foregroundStyle(.primary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.vertical, 10)
     }
 }
 
