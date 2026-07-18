@@ -14,33 +14,37 @@ struct ChatView: View {
     
     var body: some View {
         GeometryReader { geo in
-            NewChatView(viewModel: viewModel, text: $text, geo: geo)
-            .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    Menu {
-                        ForEach(
-                            viewModel.conversationList.conversations,
-                            id: \.conversationId)
-                        { convo in
-                            Button("\(convo.conversationId)") {
-                                Task {
-                                    await viewModel.fetchConversation(id: convo.conversationId)
-                                }
+            if viewModel.conversation.conversationId == Conversation().conversationId {
+                NewChatView(viewModel: viewModel, text: $text, geo: geo)
+            } else {
+                ConversationView(viewModel: viewModel, text: $text, geo: geo)
+            }
+        }
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Menu {
+                    ForEach(
+                        viewModel.conversationList.conversations,
+                        id: \.conversationId)
+                    { convo in
+                        Button("\(convo.conversationId)") {
+                            Task {
+                                await viewModel.fetchConversation(id: convo.conversationId)
                             }
                         }
-                    } label: {
-                        Image(systemName: "list.bullet")
                     }
+                } label: {
+                    Image(systemName: "list.bullet")
                 }
             }
-            .task {
-                // health check
-                let time = Date.now.formatted(date: .omitted, time: .shortened)
-                let isHealthy = await APIClient.checkConnectionHealth()
-                print("[\(time)] Connection is healthy? \(isHealthy)")
-                
-                await viewModel.refresh()
-            }
+        }
+        .task {
+            // health check
+            let time = Date.now.formatted(date: .omitted, time: .shortened)
+            let isHealthy = await APIClient.checkConnectionHealth()
+            print("[\(time)] Connection is healthy? \(isHealthy)")
+            
+            await viewModel.refresh()
         }
     }
 }

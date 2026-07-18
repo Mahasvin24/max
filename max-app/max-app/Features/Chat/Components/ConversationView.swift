@@ -8,11 +8,18 @@
 import SwiftUI
 
 struct ConversationView: View {
+    let viewModel: ChatViewModel
+    @Binding var text: String
+    let geo: GeometryProxy
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        VStack {
+            
+            
+        }
     }
 }
 
-#Preview {
-    ConversationView()
-}
+//#Preview {
+//    ConversationView()
+//}
