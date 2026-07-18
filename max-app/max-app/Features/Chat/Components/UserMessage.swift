@@ -18,7 +18,7 @@ struct UserMessage: View {
                 .foregroundStyle(.white)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
-                .background(Color.blue)
+                .background(Color(red: 0.05, green: 0.05, blue: 0.05))
                 .clipShape(RoundedRectangle(cornerRadius: 16))
         }
     }
