@@ -12,6 +12,8 @@ struct ChatView: View {
     
     @State private var text: String = ""
     @State private var showConversationList: Bool = false
+    @State private var showDeleteConfirmation: Bool = false
+    
     
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -48,11 +50,19 @@ struct ChatView: View {
                             .contentShape(Rectangle())
                         Spacer()
                         Button {
-                            // TODO: call delet function on convo
+                            showDeleteConfirmation = !showDeleteConfirmation
                         } label: {
                             Image(systemName: "trash.fill")
                         }
                         .buttonStyle(PressableIconButtonStyle())
+                        .alert("Delete this conversation?", isPresented: $showDeleteConfirmation) {
+                            Button("Cancel", role: .cancel) { }
+                            Button("Delete", role: .destructive) {
+                                // TODO: call delete function on convo from view model
+                            }
+                        } message: {
+                            Text("This action cannot be undone.")
+                        }
                     }
                     .background(.black)
                     .clipShape(RoundedRectangle(cornerRadius: 10))
