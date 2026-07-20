@@ -44,7 +44,18 @@ struct ChatView: View {
                         }
                     } label: {
                         Text("\(convo.conversationId)")
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .contentShape(Rectangle())
+                        Spacer()
+                        Button {
+                            // TODO: call delet function on convo
+                        } label: {
+                            Image(systemName: "trash.fill")
+                        }
+                        .buttonStyle(PressableIconButtonStyle())
                     }
+                    .background(.black)
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
                 .frame(width: 250, height: 300)
             }

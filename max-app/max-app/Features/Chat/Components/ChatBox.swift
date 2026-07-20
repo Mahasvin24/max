@@ -7,15 +7,6 @@
 
 import SwiftUI
 
-// Scales down on press for instant, tactile feedback (Apple Fluid Interfaces: respond on press, not release)
-private struct PressableIconButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .scaleEffect(configuration.isPressed ? 0.9 : 1.0)
-            .animation(.spring(duration: 0.15), value: configuration.isPressed)
-    }
-}
-
 struct ChatBox: View {
     @Binding var text: String
     var onSend: () -> Void
