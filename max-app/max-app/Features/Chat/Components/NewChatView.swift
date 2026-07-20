@@ -29,6 +29,7 @@ struct NewChatView: View {
 
             ChatBox(text: $text, onSend: {
                 Task {
+                    if text == "" { return }
                     let str: String = text
                     text = ""
                     await viewModel.sendMessage(text: str)

@@ -11,6 +11,7 @@ struct ChatView: View {
     let viewModel = ChatViewModel()
     
     @State private var text: String = ""
+    @State private var showConversationList: Bool = false
     
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -27,23 +28,25 @@ struct ChatView: View {
             .animation(reduceMotion ? .easeInOut(duration: 0.2) : .spring(duration: 0.4, bounce: 0), value: viewModel.conversation.conversationId)
         }
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Menu {
-                    ForEach(
-                        viewModel.conversationList.conversations,
-                        id: \.conversationId)
-                    { convo in
-                        Button("\(convo.conversationId)") {
-                            Task {
-                                await viewModel.fetchConversation(id: convo.conversationId)
-                            }
+            Button {
+                showConversationList = !showConversationList
+            } label: {
+                Image(systemName: "list.bullet")
+            }
+            .popover(isPresented: $showConversationList) {
+                List(
+                    viewModel.conversationList.conversations,
+                    id: \.conversationId)
+                { convo in
+                    Button {
+                        Task {
+                            await viewModel.fetchConversation(id: convo.conversationId)
                         }
+                    } label: {
+                        Text("\(convo.conversationId)")
                     }
-                } label: {
-                    Image(systemName: "list.bullet")
-                        .font(.system(size: Constants.Design.iconSize))
-                        .foregroundStyle(.secondary)
                 }
+                .frame(width: 250, height: 300)
             }
         }
         .task {
