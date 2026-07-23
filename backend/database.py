@@ -50,7 +50,7 @@ def _create_messages_table(conn):
             role TEXT,
             content TEXT,
             created_at TEXT,
-            FOREIGN KEY (conversation_id) REFERENCES conversations(id)
+            FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE
         )   
     """)
     conn.commit()
@@ -111,6 +111,15 @@ def get_all_conversations() -> list[dict[str, Any]]:
         "created_at": row["created_at"],
         "updated_at": row["updated_at"]
     } for row in rows]
+def delete_conversation(conversation_id: int):
+    conn = _get_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "DELETE FROM conversations WHERE id = ?",
+        (conversation_id,)
+    )
+    conn.commit()
+    conn.close()
 
 """ testing """
 if __name__ == "__main__":
