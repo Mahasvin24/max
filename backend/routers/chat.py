@@ -22,9 +22,10 @@ def create_conversation():
     return db.create_conversation()
 
 """ Delete a conversation """
-@router.delete("/conversation")
+@router.delete("/conversations")
 def delete_conversation(conversation_id: int):
     db.delete_conversation(conversation_id)
+    return {"status": "ok"}
 
 """ Get sequences of messages for a conversation """
 @router.get("/conversations")
