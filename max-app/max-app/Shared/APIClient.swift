@@ -10,7 +10,7 @@ import Foundation
 struct APIClient {
     // health check
     static func checkConnectionHealth() async -> Bool {
-        let res: Health
+        let res: Status
         do {
             res = try await request(
                 action: Constants.API.GET, path: "/health"

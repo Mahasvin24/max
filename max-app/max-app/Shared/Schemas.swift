@@ -36,6 +36,6 @@ nonisolated struct MessageResponse: Codable {
     var createdAt: String
 }
 
-nonisolated struct Health: Codable {
+nonisolated struct Status: Codable {
     var status: String
 }

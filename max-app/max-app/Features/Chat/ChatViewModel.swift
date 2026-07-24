@@ -61,6 +61,18 @@ class ChatViewModel {
         await fetchAllConversations()
     }
     
+    // Calls: DELETE /conversations
+    func deleteConversation(id: Int) async {
+        guard let _: Status = await callAPI(
+            action: Constants.API.DELETE,
+            path: "/conversations?conversation_id=\(id)"
+        ) else {
+            print("Failed to delete conversation")
+            return
+        }
+        await fetchAllConversations() // update conversation list
+    }
+    
     // Calls: GET /conversations
     func fetchConversation(id: Int) async {
         guard let response: [MessageResponse] = await callAPI(
