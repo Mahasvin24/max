@@ -4,6 +4,7 @@ from typing import Any
 
 import config
 
+
 """ helpers """
 def _get_connection():
     conn = sqlite3.connect(config.DATABASE)
@@ -72,7 +73,7 @@ def create_conversation() -> dict[str, Any]:
         "created_at": time,
         "updated_at": time 
     }
-def add_message(conversation_id: int, role: str, content: str) -> dict[str, Any]:
+def insert_message(conversation_id: int, role: str, content: str) -> dict[str, Any]:
     conn = _get_connection()
     cursor = conn.cursor()
     time = _get_time()
@@ -90,7 +91,7 @@ def add_message(conversation_id: int, role: str, content: str) -> dict[str, Any]
         "content": content,
         "created_at": time
     }
-def messages_for_id(conversation_id: int) -> list[dict[str, str]]:
+def get_messages_for_id(conversation_id: int) -> list[dict[str, str]]:
     conn = _get_connection()
     cursor = conn.cursor()
     cursor.execute(

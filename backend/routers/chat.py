@@ -2,15 +2,15 @@ import ollama
 from fastapi import APIRouter
 
 import config
-from database import create_conversation, get_all_conversations, add_message, messages_for_id
+import database as db
 from schemas import Conversation, ConversationList, Message, MessageResponse
 
 router = APIRouter()
 
 """ List of all conversation ids """
 @router.get("/all-conversations", response_model=ConversationList)
-def get_conversation_history():
-    conversations = get_all_conversations()
+def fetch_conversation_history():
+    conversations = db.get_all_conversations()
     return {
         "conversations": conversations,
         "count": len(conversations)
@@ -18,27 +18,24 @@ def get_conversation_history():
 
 """ Create a new conversation """
 @router.post("/conversations", response_model=Conversation)
-def create_conversation_id():
-    return create_conversation()
+def create_conversation():
+    return db.create_conversation()
 
 """ Get sequences of messages for a conversation """
 @router.get("/conversations")
-def get_full_conversation(conversation_id: int):
-    return messages_for_id(conversation_id)
+def get_messages_for_conversation(conversation_id: int):
+    return db.get_messages_for_id(conversation_id)
 
 """ Send a message and get agent response. """
 @router.post("/messages", response_model=MessageResponse)
-def send_message(message: Message):
+def message_agent(message: Message):
     # add user message to table
-    add_message(message.conversation_id, "user", message.content)
+    db.insert_message(message.conversation_id, "user", message.content)
 
-    messages = messages_for_id(message.conversation_id)
+    messages = db.get_messages_for_id(message.conversation_id)
     response = ollama.chat(model=config.MODEL, messages=messages)
     content = response["message"]["content"]
 
-    obj = add_message(message.conversation_id, "assistant", content)
+    obj = db.insert_message(message.conversation_id, "assistant", content)
 
     return obj
-
-
-
