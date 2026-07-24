@@ -21,6 +21,11 @@ def fetch_conversation_history():
 def create_conversation():
     return db.create_conversation()
 
+""" Delete a conversation """
+@router.delete("/conversation")
+def delete_conversation(conversation_id: int):
+    db.delete_conversation(conversation_id)
+
 """ Get sequences of messages for a conversation """
 @router.get("/conversations")
 def get_messages_for_conversation(conversation_id: int):
