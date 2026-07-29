@@ -4,5 +4,6 @@ MODEL = "gemma2:2b"
 
 DATABASE = "data.db"
 
-SYSTEM_PROMPT = "prompts/SYSTEM_PROMPT.md"
+with open("prompts/SYSTEM_PROMPT.md", "r") as f:
+    SYSTEM_PROMPT = f.read()
 
