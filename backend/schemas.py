@@ -2,6 +2,7 @@ from pydantic import BaseModel
 
 class Conversation(BaseModel):
     conversation_id: int
+    title: str
     created_at: str
     updated_at: str
 

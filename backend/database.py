@@ -37,6 +37,7 @@ def _create_conversations_table(conn):
     cursor.execute("""
        CREATE TABLE IF NOT EXISTS conversations (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT,
             created_at TEXT,
             updated_at TEXT
         )            
@@ -57,7 +58,7 @@ def _create_messages_table(conn):
     conn.commit()
 
 """ basic conversation methods """
-def create_conversation() -> dict[str, Any]:
+def create_conversation() -> int:
     conn = _get_connection()
     cursor = conn.cursor()
     time = _get_time()
@@ -68,11 +69,7 @@ def create_conversation() -> dict[str, Any]:
     conn.commit()
     conversation_id = cursor.lastrowid
     conn.close()
-    return {
-        "conversation_id": conversation_id,
-        "created_at": time,
-        "updated_at": time 
-    }
+    return conversation_id
 def insert_message(conversation_id: int, role: str, content: str) -> dict[str, Any]:
     conn = _get_connection()
     cursor = conn.cursor()

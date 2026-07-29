@@ -26,7 +26,7 @@ struct ChatView: View {
                 }
             }
             .transition(.opacity)
-            .animation(reduceMotion ? .easeInOut(duration: 0.2) : .spring(duration: 0.4, bounce: 0), value: viewModel.conversation.conversationId)
+            .animation(reduceMotion ? .easeInOut(duration: 0.2) : .spring(duration: 0.4, bounce: 0), value:  viewModel.conversation.conversationId)
         }
         .toolbar {
             Button {
