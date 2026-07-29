@@ -1,7 +1,6 @@
-import ollama
 from fastapi import APIRouter
 
-import config
+import agent
 import database as db
 from schemas import Conversation, ConversationList, Message, MessageResponse
 
@@ -44,7 +43,7 @@ def message_agent(message: Message):
     db.insert_message(message.conversation_id, "user", message.content)
 
     messages = db.get_messages_for_id(message.conversation_id)
-    response = ollama.chat(model=config.MODEL, messages=messages)
+    response = agent.quick_message(messages=messages)
     content = response["message"]["content"]
 
     obj = db.insert_message(message.conversation_id, "assistant", content)
