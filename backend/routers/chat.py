@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 import agent
+import config
 import database as db
 from schemas import Conversation, ConversationList, Message, MessageResponse
 
@@ -43,7 +44,7 @@ def message_agent(message: Message):
     db.insert_message(message.conversation_id, "user", message.content)
 
     messages = db.get_messages_for_id(message.conversation_id)
-    response = agent.quick_message(messages=messages)
+    response = agent.quick_message(messages=messages, sys_prompt=config.SYSTEM_PROMPT)
     content = response["message"]["content"]
 
     obj = db.insert_message(message.conversation_id, "assistant", content)

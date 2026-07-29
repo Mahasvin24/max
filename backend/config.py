@@ -1,8 +1,8 @@
 # Global variables
 
-MODEL="gemma2:2b"
+MODEL = "gemma2:2b"
 
 DATABASE = "data.db"
 
-# SYSTEM_PROMPT_FILEPATH = "SYSTEM_PROMPT.md"
+SYSTEM_PROMPT = "prompts/SYSTEM_PROMPT.md"
 
