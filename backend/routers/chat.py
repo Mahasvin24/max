@@ -16,11 +16,6 @@ def fetch_conversation_history():
         "count": len(conversations)
     }
 
-""" Create a new conversation """
-@router.post("/conversations", response_model=Conversation)
-def create_conversation():
-    return db.create_conversation()
-
 """ Delete a conversation """
 @router.delete("/conversations")
 def delete_conversation(conversation_id: int):
