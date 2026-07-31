@@ -58,13 +58,13 @@ def _create_messages_table(conn):
     conn.commit()
 
 """ basic conversation methods """
-def create_conversation() -> int:
+def create_conversation(title: str) -> int:
     conn = _get_connection()
     cursor = conn.cursor()
     time = _get_time()
     cursor.execute(
-        "INSERT INTO conversations (created_at, updated_at) VALUES (?, ?)",
-        (time, time) # isoformat converts to string from datetime obj
+        "INSERT INTO conversations (title, created_at, updated_at) VALUES (?, ?, ?)",
+        (title, time, time) # isoformat converts to string from datetime obj
     )
     conn.commit()
     conversation_id = cursor.lastrowid

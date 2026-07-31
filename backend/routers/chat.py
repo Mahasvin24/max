@@ -38,15 +38,17 @@ def message_agent(message: Message):
     # Create new conversation conversation_id == -1
     is_new = message.conversation_id == -1
     if is_new:
-        message.conversation_id = create_conversation()
+        message.conversation_id = db.create_conversation(message.content)
 
     # add user message to table
     db.insert_message(message.conversation_id, "user", message.content)
 
+    # agent response
     messages = db.get_messages_for_id(message.conversation_id)
     response = agent.quick_message(messages=messages, sys_prompt=config.SYSTEM_PROMPT)
     content = response["message"]["content"]
 
+    # add agent message to table
     obj = db.insert_message(message.conversation_id, "assistant", content)
 
     return obj
