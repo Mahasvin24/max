@@ -106,11 +106,12 @@ def get_messages_for_id(conversation_id: int) -> list[dict[str, str]]:
 def get_all_conversations() -> list[dict[str, Any]]:
     conn = _get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT id, created_at, updated_at FROM conversations ORDER BY updated_at")
+    cursor.execute("SELECT id, title, created_at, updated_at FROM conversations ORDER BY updated_at")
     rows = cursor.fetchall()
     conn.close()
     return [{
         "conversation_id": row["id"],
+        "title": row["title"],
         "created_at": row["created_at"],
         "updated_at": row["updated_at"]
     } for row in rows]
