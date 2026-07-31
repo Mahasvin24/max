@@ -33,7 +33,8 @@ def message_agent(message: Message):
     # Create new conversation conversation_id == -1
     is_new = message.conversation_id == -1
     if is_new:
-        message.conversation_id = db.create_conversation(message.content)
+        convo = db.create_conversation(message.content) # conforms to Conversation, additional metadata included
+        message.conversation_id = convo["conversation_id"]
 
     # add user message to table
     db.insert_message(message.conversation_id, "user", message.content)

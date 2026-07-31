@@ -69,7 +69,12 @@ def create_conversation(title: str) -> int:
     conn.commit()
     conversation_id = cursor.lastrowid
     conn.close()
-    return conversation_id
+    return {
+        "conversation_id": conversation_id,
+        "title": title,
+        "created_at": time,
+        "updated_at": time
+    }
 def insert_message(conversation_id: int, role: str, content: str) -> dict[str, Any]:
     conn = _get_connection()
     cursor = conn.cursor()

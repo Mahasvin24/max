@@ -11,7 +11,7 @@ class ConversationList(BaseModel):
     count: int
 
 class Message(BaseModel):
-    conversation_id: int
+    conversation: Conversation
     content: str
 
 class MessageResponse(BaseModel):
