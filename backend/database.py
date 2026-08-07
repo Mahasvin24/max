@@ -124,6 +124,19 @@ def delete_conversation(conversation_id: int):
     )
     conn.commit()
     conn.close()
+def update_conversation_title(conversation_id: int, title: str):
+    conn = _get_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        UPDATE conversations
+        SET title = ?
+        WHERE conversation_id = ?
+        """,
+        (title, conversation_id)
+    )
+    conn.commit()
+    conn.close()
 
 """ testing """
 if __name__ == "__main__":
