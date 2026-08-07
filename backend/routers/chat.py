@@ -31,20 +31,21 @@ def get_messages_for_conversation(conversation_id: int):
 @router.post("/messages", response_model=MessageResponse)
 def message_agent(message: Message):
     # Create new conversation conversation_id == -1
-    is_new = message.conversation_id == -1
-    if is_new:
+    conv_id = message.conversation.conversation_id
+    if conv_id == -1:
         convo = db.create_conversation(message.content)
         message.conversation = Conversation(**convo)
+        conv_id = message.conversation.conversation_id
 
     # add user message to table
-    db.insert_message(message.conversation_id, "user", message.content)
+    db.insert_message(conv_id, "user", message.content)
 
     # agent response
-    messages = db.get_messages_for_id(message.conversation_id)
+    messages = db.get_messages_for_id(conv_id)
     response = agent.quick_message(messages=messages, sys_prompt=config.SYSTEM_PROMPT)
     content = response["message"]["content"]
 
     # add agent message to table
-    obj = db.insert_message(message.conversation_id, "assistant", content)
+    obj = db.insert_message(conv_id, "assistant", content)
 
     return obj
