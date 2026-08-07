@@ -48,4 +48,10 @@ def message_agent(message: Message):
     # add agent message to table
     obj = db.insert_message(conv_id, "assistant", content)
 
+    # create title for new conversations
+    if conv_id == -1:
+        messages = db.get_messages_for_id(conv_id)
+        title = agent.quick_message(messages=messages, sys_prompt=config.TITLE_GEN_PROMPT)
+        db.update_conversation_title(title)
+
     return obj
