@@ -4,7 +4,6 @@ from typing import Any
 
 import config
 
-
 """ helpers """
 def _get_connection():
     conn = sqlite3.connect(config.DATABASE)
@@ -83,6 +82,14 @@ def insert_message(conversation_id: int, role: str, content: str) -> dict[str, A
         "INSERT INTO messages (conversation_id, role, content, created_at) VALUES (?, ?, ?, ?)",
         (conversation_id, role, content, time)
     )
+    cursor.execute(
+        """
+        UPDATE conversations
+        SET updated_at = ?
+        WHERE id = ?
+        """,
+        (conversation_id, time)
+    )
     id = cursor.lastrowid
     conn.commit()
     conn.close()
@@ -106,7 +113,13 @@ def get_messages_for_id(conversation_id: int) -> list[dict[str, str]]:
 def get_all_conversations() -> list[dict[str, Any]]:
     conn = _get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT id, title, created_at, updated_at FROM conversations ORDER BY updated_at")
+    cursor.execute(
+        """
+        SELECT id, title, created_at, updated_at 
+        FROM conversations 
+        ORDER BY updated_at DESC
+        """
+    )
     rows = cursor.fetchall()
     conn.close()
     return [{
@@ -124,16 +137,16 @@ def delete_conversation(conversation_id: int):
     )
     conn.commit()
     conn.close()
-def update_conversation_title(conversation_id: int, title: str):
+def update_conversation_title(id: int, title: str):
     conn = _get_connection()
     cursor = conn.cursor()
     cursor.execute(
         """
         UPDATE conversations
         SET title = ?
-        WHERE conversation_id = ?
+        WHERE id = ?
         """,
-        (title, conversation_id)
+        (title, id)
     )
     conn.commit()
     conn.close()
