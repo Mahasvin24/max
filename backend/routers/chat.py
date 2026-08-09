@@ -31,11 +31,12 @@ def get_messages_for_conversation(conversation_id: int):
 @router.post("/messages", response_model=MessageResponse)
 def message_agent(message: Message):
     # Create new conversation conversation_id == -1
-    conv_id = message.conversation.conversation_id
-    if conv_id == -1:
+    is_new = message.conversation is None
+    if is_new:
         convo = db.create_conversation(message.content)
         message.conversation = Conversation(**convo)
-        conv_id = message.conversation.conversation_id
+
+    conv_id = message.conversation.conversation_id
 
     # add user message to table
     db.insert_message(conv_id, "user", message.content)
@@ -49,7 +50,7 @@ def message_agent(message: Message):
     obj = db.insert_message(conv_id, "assistant", content)
 
     # create title for new conversations
-    if conv_id == -1:
+    if is_new:
         messages = db.get_messages_for_id(conv_id)
         title = agent.quick_message(messages=messages, sys_prompt=config.TITLE_GEN_PROMPT)
         db.update_conversation_title(title)
