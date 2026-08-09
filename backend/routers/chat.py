@@ -31,7 +31,7 @@ def get_messages_for_conversation(conversation_id: int):
 @router.post("/messages", response_model=MessageResponse)
 def message_agent(message: Message):
     # Create new conversation conversation_id == -1
-    is_new = message.conversation is None
+    is_new = message.conversation.conversation_id == -1
     if is_new:
         convo = db.create_conversation(message.content)
         message.conversation = Conversation(**convo)

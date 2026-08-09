@@ -12,7 +12,7 @@ import Foundation
 // instead of just saying codable for everything (just for precision)
 //
 
-nonisolated struct Conversation: Codable {
+nonisolated struct Conversation: Codable, Equatable {
     var conversationId: Int = -1
     var createdAt: String = ""
     var updatedAt: String = ""
@@ -24,7 +24,7 @@ nonisolated struct ConversationList: Codable {
 }
 
 nonisolated struct Message: Codable {
-    var conversationId: Int
+    var conversation: Conversation? = nil
     var content: String
 }
 

@@ -47,20 +47,7 @@ class ChatViewModel {
         conversationList = response
         conversationListStatus = .success
     }
-    
-    // Calls: POST /conversations
-    func createConversation() async {
-        guard let response: Conversation = await callAPI(
-            action: Constants.API.POST, 
-            path: "/conversations"
-        ) else {
-            print("Failed to create conversation.")
-            return
-        }
-        conversation = response
-        await fetchAllConversations()
-    }
-    
+        
     // Calls: DELETE /conversations
     func deleteConversation(id: Int) async {
         guard let _: Status = await callAPI(
@@ -93,26 +80,28 @@ class ChatViewModel {
     
     // Calls: POST /messages
     func sendMessage(text: String) async {
-        // start new convo if needed
-        if conversation.conversationId == -1 {
-            await createConversation()
-        }
-        
-        // call API
         // Note: we could be more efficient by just creating the two messages as MessageResponse types
         // and appending that to the array. It's possibe then that we differ from server but I think
         // that it could still be fine.
-        guard let _: MessageResponse = await callAPI(
+        
+        let isNew = conversation == Conversation()
+        
+        // call API
+        guard let res: MessageResponse = await callAPI(
             action: Constants.API.POST,
             path: "/messages",
-            body: Message(conversationId: conversation.conversationId, content: text)
+            body: Message(conversation: conversation, content: text)
         ) else {
             print("Failed to send message.")
             return
         }
         
-        // refresh conversation log, server is source of truth
-        await fetchConversation(id: conversation.conversationId)
+        // update with the new data
+        if isNew {
+            await fetchAllConversations()
+        } else {
+            await fetchConversation(id: res.conversationId)
+        }
     }
     
     //

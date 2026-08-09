@@ -12,8 +12,8 @@ class ConversationList(BaseModel):
     count: int
 
 class Message(BaseModel):
+    conversation: Conversation
     content: str
-    conversation: Optional[Conversation] = None
 
 class MessageResponse(BaseModel):
     conversation_id: int
