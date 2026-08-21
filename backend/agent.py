@@ -14,3 +14,5 @@ def quick_message(messages: list[Message], sys_prompt: str | None = None):
 
     return ollama.chat(model=config.MODEL, messages=messages)
 
+def thinking_message(messages: list[Message], sys_prompt: str | None = None):
+    ...
