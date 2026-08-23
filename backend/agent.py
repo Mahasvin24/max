@@ -7,10 +7,10 @@ class Message(TypedDict):
     role: str
     content: str
 
-def quick_message(messages: list[Message], sys_prompt: str | None = None):
-    # Add system prompt if specified
-    if sys_prompt:
-        messages[0]["content"] = sys_prompt + "\n" + messages[0]["content"]
+def quick_message(messages: list[Message], sys_prompt: str = config.SYSTEM_PROMPT):
+    # System prompt
+    sys_msg = Message(role="system", content=sys_prompt)
+    messages.insert(0, sys_msg)
 
     return ollama.chat(model=config.MODEL, messages=messages)
 
