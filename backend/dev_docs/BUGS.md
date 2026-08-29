@@ -34,9 +34,9 @@ Everything found so far has been fixed and verified.
 
 ## Smaller notes
 
-- `GET /conversations` returns **messages**, not conversations, and has no
-  `response_model`, so it is neither documented nor validated by FastAPI.
-  A name like `/conversations/{id}/messages` would say what it does.
+- `GET /messages` has no `response_model`, so its shape is neither documented
+  in `/docs` nor validated by FastAPI. (The route naming itself is fixed —
+  `/conversations` and `/messages` now each return what they say.)
 - `create_conversation` is annotated `-> int` but returns a dict.
 - Deleting a conversation id that does not exist returns `{"status": "ok"}`.
   Harmless, but a 404 would be more honest.
