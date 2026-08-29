@@ -26,13 +26,10 @@ struct Constants {
     static let userNameString = "Mahasvin"
     
     // API
-    struct API {
+    // nonisolated: APIClient runs off the main actor, so it must be able to
+    // read this without hopping back to MainActor.
+    nonisolated struct API {
         static let baseURL = "http://127.0.0.1:8000"
-        static let GET = "GET"
-        static let POST = "POST"
-        static let PUT = "PUT"
-        static let PATCH = "PATCH"
-        static let DELETE = "DELETE"
     }
     
     // one time use

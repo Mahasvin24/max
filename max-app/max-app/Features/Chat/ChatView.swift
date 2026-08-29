@@ -19,7 +19,7 @@ struct ChatView: View {
     var body: some View {
         GeometryReader { geo in
             Group {
-                if viewModel.conversation.conversationId == Conversation().conversationId {
+                if viewModel.conversation.isNew {
                     NewChatView(viewModel: viewModel, text: $text, geo: geo)
                 } else {
                     ConversationView(viewModel: viewModel, text: $text, geo: geo)
@@ -44,7 +44,7 @@ struct ChatView: View {
                             await viewModel.fetchConversation(id: convo.conversationId)
                         }
                     } label: {
-                        Text("\(convo.conversationId)")
+                        Text(convo.title.isEmpty ? "Conversation \(convo.conversationId)" : convo.title)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .contentShape(Rectangle())
                         Spacer()
@@ -72,7 +72,7 @@ struct ChatView: View {
         .task {
             // health check
             let time = Date.now.formatted(date: .omitted, time: .shortened)
-            let isHealthy = await APIClient.checkConnectionHealth()
+            let isHealthy = await APIClient.System.isHealthy()
             print("[\(time)] Connection is healthy? \(isHealthy)")
             
             await viewModel.refresh()
