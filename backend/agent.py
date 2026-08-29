@@ -23,9 +23,7 @@ def thinking_message(messages: list[Message]):
     
     return ollama.chat(model=config.MODEL, messages=messages, think=True)
 
-
-
-""" Conversation Title Generation """
+""" Create titles for conversations. """
 def create_title(messages: list[Message]):
     # System rompt to create title
     messages = messages[:]
