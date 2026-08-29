@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 import agent
 import config
@@ -40,7 +40,7 @@ def message_agent(message: Message):
 
     # Invalid conversation id case
     if not db.converation_exists(conv_id):
-        
+        raise HTTPException(status_code=404, detail=f"Conversation {conv_id} not found.")
 
     # add user message to table
     db.insert_message(conv_id, "user", message.content)
