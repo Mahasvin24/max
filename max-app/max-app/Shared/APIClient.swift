@@ -7,31 +7,104 @@
 
 import Foundation
 
-struct APIClient {
-    // health check
-    static func checkConnectionHealth() async -> Bool {
-        let res: Status
-        do {
-            res = try await request(
-                action: Constants.API.GET, path: "/health"
-            )
-        } catch {
-            print(error.localizedDescription)
-            return false
+/// Every call the backend exposes, in one place.
+///
+/// Endpoints are grouped into namespaces that mirror the backend's routers, so
+/// there is a 1:1 map between a Python file and a Swift namespace:
+///
+///   `APIClient.System`  ->  backend/main.py
+///   `APIClient.Chat`    ->  backend/routers/chat.py
+///
+/// Callers (view models) only ever use those namespaces. The transport below is
+/// private so URLs and HTTP verbs cannot leak into the rest of the app.
+nonisolated struct APIClient {
+
+    // MARK: - Namespace: System (backend/main.py)
+
+    enum System {
+        /// `GET /health`
+        static func health() async throws -> Status {
+            try await APIClient.request(.get, "/health")
         }
-        return res.status == "ok"
+
+        /// Non-throwing convenience for the "is the backend up?" check.
+        static func isHealthy() async -> Bool {
+            do {
+                return try await health().status == "ok"
+            } catch {
+                print("Health check failed: \(error.localizedDescription)")
+                return false
+            }
+        }
     }
-    
-    // generic api request (has a body)
-    static func request<Input: Encodable, Output: Decodable>(action: String, path: String, body: Input?) async throws -> Output {
-        
-        guard let url = URL(string: "\(Constants.API.baseURL)\(path)") else {
+
+    // MARK: - Namespace: Chat (backend/routers/chat.py)
+
+    enum Chat {
+        /// `GET /all-conversations` — every conversation, newest first.
+        static func allConversations() async throws -> ConversationList {
+            try await APIClient.request(.get, "/all-conversations")
+        }
+
+        /// `GET /conversations?conversation_id=` — the messages of one conversation.
+        ///
+        /// Note the backend route is named `/conversations` but returns *messages*.
+        static func messages(conversationId: Int) async throws -> [MessageResponse] {
+            try await APIClient.request(
+                .get, "/conversations",
+                query: [URLQueryItem(name: "conversation_id", value: String(conversationId))]
+            )
+        }
+
+        /// `DELETE /conversations?conversation_id=`
+        @discardableResult
+        static func deleteConversation(conversationId: Int) async throws -> Status {
+            try await APIClient.request(
+                .delete, "/conversations",
+                query: [URLQueryItem(name: "conversation_id", value: String(conversationId))]
+            )
+        }
+
+        /// `POST /messages` — send a message, get the agent's reply back.
+        ///
+        /// Pass `Conversation()` (id `-1`) to start a new conversation; the
+        /// backend creates it and titles it for you.
+        static func sendMessage(conversation: Conversation, content: String) async throws -> MessageResponse {
+            try await APIClient.request(
+                .post, "/messages",
+                body: Message(conversation: conversation, content: content)
+            )
+        }
+    }
+
+    // MARK: - Transport
+
+    enum Method: String {
+        case get = "GET"
+        case post = "POST"
+        case put = "PUT"
+        case patch = "PATCH"
+        case delete = "DELETE"
+    }
+
+    /// Builds the URL, sends the request, checks the status code, decodes the body.
+    private static func request<Input: Encodable, Output: Decodable>(
+        _ method: Method,
+        _ path: String,
+        query: [URLQueryItem] = [],
+        body: Input?
+    ) async throws -> Output {
+
+        // url (URLComponents percent-encodes query values for us)
+        guard var components = URLComponents(string: "\(Constants.API.baseURL)\(path)") else {
             throw APIError.invalidURL
         }
-        
-        // create request
+        if !query.isEmpty { components.queryItems = query }
+        guard let url = components.url else { throw APIError.invalidURL }
+
+        // request
         var req = URLRequest(url: url)
-        req.httpMethod = action
+        req.httpMethod = method.rawValue
         if let body {
             let encoder = JSONEncoder()
             encoder.keyEncodingStrategy = .convertToSnakeCase
@@ -42,8 +115,8 @@ struct APIClient {
             }
             req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         }
-        
-        // make request
+
+        // send
         let result: Data
         let response: URLResponse
         do {
@@ -51,30 +124,36 @@ struct APIClient {
         } catch {
             throw APIError.connectionFailed
         }
-        
+
         // status code check
-        guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
-            let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
-            throw APIError.requestFailed(statusCode: statusCode)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.requestFailed(statusCode: -1, message: nil)
         }
-        
+        guard (200...299).contains(httpResponse.statusCode) else {
+            // FastAPI puts a useful reason (e.g. 422 validation detail) in the body
+            throw APIError.requestFailed(
+                statusCode: httpResponse.statusCode,
+                message: String(data: result, encoding: .utf8)
+            )
+        }
+
         // decode
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
-        let obj: Output
         do {
-            obj = try decoder.decode(Output.self, from: result)
+            return try decoder.decode(Output.self, from: result)
         } catch {
             throw APIError.decodingFailed(underlyingError: error)
         }
-        
-        return obj
     }
-    
-    
-    // generic api request (no body)
+
+    /// Same as above, for requests without a body.
     private struct EmptyBody: Encodable {}
-    static func request<Output: Decodable>(action: String, path: String) async throws -> Output {
-        try await request(action: action, path: path, body: EmptyBody?.none)
+    private static func request<Output: Decodable>(
+        _ method: Method,
+        _ path: String,
+        query: [URLQueryItem] = []
+    ) async throws -> Output {
+        try await request(method, path, query: query, body: EmptyBody?.none)
     }
 }

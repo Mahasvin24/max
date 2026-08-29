@@ -8,27 +8,39 @@
 import Foundation
 
 //
-// maybe consider specifying which are encodable and whicch are decodable
-// instead of just saying codable for everything (just for precision)
+// Mirrors backend/schemas.py. Conformances are split on purpose:
+// types we only ever receive are Decodable, types we only ever send are Encodable.
+// The snake_case <-> camelCase mapping is handled by the key strategies in APIClient.
 //
 
-nonisolated struct Conversation: Codable, Equatable {
-    var conversationId: Int = -1
+/// backend: `Conversation` — sent inside a message body, received in lists.
+nonisolated struct Conversation: Codable, Equatable, Identifiable {
+    /// Sentinel the backend uses to mean "create a new conversation".
+    static let newId = -1
+
+    var conversationId: Int = newId
+    var title: String = ""
     var createdAt: String = ""
     var updatedAt: String = ""
+
+    var id: Int { conversationId }
+    var isNew: Bool { conversationId == Self.newId }
 }
 
-nonisolated struct ConversationList: Codable {
+/// backend: `ConversationList` — response of `GET /all-conversations`.
+nonisolated struct ConversationList: Decodable {
     var conversations: [Conversation] = []
     var count: Int = 0
 }
 
-nonisolated struct Message: Codable {
-    var conversation: Conversation? = nil
+/// backend: `Message` — request body of `POST /messages`.
+nonisolated struct Message: Encodable {
+    var conversation: Conversation
     var content: String
 }
 
-nonisolated struct MessageResponse: Codable {
+/// backend: `MessageResponse` — one row of the `messages` table.
+nonisolated struct MessageResponse: Decodable, Identifiable {
     var conversationId: Int
     var id: Int
     var role: String
@@ -36,6 +48,7 @@ nonisolated struct MessageResponse: Codable {
     var createdAt: String
 }
 
-nonisolated struct Status: Codable {
+/// backend: the `{"status": "ok"}` payloads (`GET /health`, `DELETE /conversations`).
+nonisolated struct Status: Decodable {
     var status: String
 }
