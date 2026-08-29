@@ -41,37 +41,39 @@ nonisolated struct APIClient {
     // MARK: - Namespace: Chat (backend/routers/chat.py)
 
     enum Chat {
-        /// `GET /all-conversations` — every conversation, newest first.
-        static func allConversations() async throws -> ConversationList {
-            try await APIClient.request(.get, "/all-conversations")
+        private static let conversationsPath = "/conversations"
+        private static let messagesPath = "/messages"
+
+        private static func conversationId(_ id: Int) -> [URLQueryItem] {
+            [URLQueryItem(name: "conversation_id", value: String(id))]
         }
 
-        /// `GET /conversations?conversation_id=` — the messages of one conversation.
-        ///
-        /// Note the backend route is named `/conversations` but returns *messages*.
-        static func messages(conversationId: Int) async throws -> [MessageResponse] {
-            try await APIClient.request(
-                .get, "/conversations",
-                query: [URLQueryItem(name: "conversation_id", value: String(conversationId))]
-            )
+        /// `GET /conversations` — every conversation, newest first.
+        static func allConversations() async throws -> ConversationList {
+            try await APIClient.request(.get, conversationsPath)
         }
 
         /// `DELETE /conversations?conversation_id=`
         @discardableResult
-        static func deleteConversation(conversationId: Int) async throws -> Status {
-            try await APIClient.request(
-                .delete, "/conversations",
-                query: [URLQueryItem(name: "conversation_id", value: String(conversationId))]
-            )
+        static func deleteConversation(conversationId id: Int) async throws -> Status {
+            try await APIClient.request(.delete, conversationsPath, query: conversationId(id))
+        }
+
+        /// `GET /messages?conversation_id=` — the messages of one conversation.
+        static func messages(conversationId id: Int) async throws -> [MessageResponse] {
+            try await APIClient.request(.get, messagesPath, query: conversationId(id))
         }
 
         /// `POST /messages` — send a message, get the agent's reply back.
         ///
         /// Pass `Conversation()` (id `-1`) to start a new conversation; the
         /// backend creates it and titles it for you.
+        ///
+        /// Throws `APIError.requestFailed(statusCode: 404, ...)` if the
+        /// conversation no longer exists.
         static func sendMessage(conversation: Conversation, content: String) async throws -> MessageResponse {
             try await APIClient.request(
-                .post, "/messages",
+                .post, messagesPath,
                 body: Message(conversation: conversation, content: content)
             )
         }

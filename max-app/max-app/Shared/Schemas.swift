@@ -46,6 +46,9 @@ nonisolated struct MessageResponse: Decodable, Identifiable {
     var role: String
     var content: String
     var createdAt: String
+
+    /// Views branch on this instead of comparing the raw `role` string in several places.
+    var isFromUser: Bool { role == "user" }
 }
 
 /// backend: the `{"status": "ok"}` payloads (`GET /health`, `DELETE /conversations`).
