@@ -38,6 +38,10 @@ def message_agent(message: Message):
 
     conv_id = message.conversation.conversation_id
 
+    # Invalid conversation id case
+    if not db.converation_exists(conv_id):
+        
+
     # add user message to table
     db.insert_message(conv_id, "user", message.content)
 

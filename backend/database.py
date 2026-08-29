@@ -78,6 +78,18 @@ def create_conversation(title: str) -> int:
             "created_at": time,
             "updated_at": time
         }
+def converation_exists(id: int) -> bool:
+    with _connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT EXISTS (
+                SELECT 1
+                FROM conversations
+                WHERE id = ?
+            );
+        """, (id,))
+        rows = cursor.fetchall()
+        return bool(rows[0])
 def insert_message(conversation_id: int, role: str, content: str) -> dict[str, Any]:
     with _connection() as conn:
         cursor = conn.cursor()
