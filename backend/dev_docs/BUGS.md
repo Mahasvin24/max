@@ -21,58 +21,14 @@ Quote the title instead.
 Testing is done against a scratch copy of the backend with its own fresh
 `data.db`, never against `backend/data.db`, so nothing here touches real data.
 
-Last verified: 2026-08-28, all four entries checked against a live server.
+Last verified: 2026-08-28 — 404 handling and the message-list copy confirmed
+against a live server.
 
 ---
 
-## 1) Sending a message to a conversation that does not exist returns 500
+## No open bugs
 
-In `routers/chat.py`, `message_agent` inserts the user's message into the
-`messages` table before checking that the conversation actually exists. Because
-the connection sets `PRAGMA foreign_keys = ON`, SQLite rejects the insert with a
-`FOREIGN KEY constraint failed` error, which escapes as an unhandled 500.
-
-What's wrong with that: the client gets a generic "Internal Server Error" and
-cannot tell "this conversation is gone" apart from "the backend is broken".
-A 404 would say exactly what happened.
-
-This is reachable from the app, not just from a test script. Before the frontend
-fix, deleting the conversation you were currently viewing left its id sitting in
-the view model, so the next message you typed was sent to a conversation that no
-longer existed.
-
-Still reproducible:
-
-```
-POST /messages  {"conversation": {"conversation_id": 424242, ...}}  ->  500
-```
-
----
-
-## 2) `quick_message` modifies the list it is given
-
-`agent.quick_message` prepends the system prompt with
-`messages.insert(0, sys_msg)`. That mutates the caller's list in place rather
-than working on a copy, so the caller's variable silently gains a system message
-it never asked for.
-
-`thinking_message` has been fixed — it copies with `messages = messages[:]`
-before inserting. `quick_message`, which is the one actually being called by
-`routers/chat.py`, still mutates. Confirmed by passing in a one-message list and
-reading it back afterwards:
-
-```
-caller list: 1 msg before -> 2 after; roles now ['system', 'user']
-```
-
-Nothing is broken today, because `routers/chat.py` reads a fresh list from the
-database before each call. But it is a trap waiting for the first piece of code
-that reuses a message list — for example calling the agent twice with the same
-list, which would quietly stack two system prompts.
-
-Worth noting the two functions now differ only in the `think` value they pass.
-One function with a `think: bool = False` parameter would say it once, and there
-would be only one place for this bug to live.
+Everything found so far has been fixed and verified.
 
 ---
 

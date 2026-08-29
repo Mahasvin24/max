@@ -88,8 +88,8 @@ def converation_exists(id: int) -> bool:
                 WHERE id = ?
             );
         """, (id,))
-        rows = cursor.fetchall()
-        return bool(rows[0])
+        row = cursor.fetchone()
+        return bool(row[0])
 def insert_message(conversation_id: int, role: str, content: str) -> dict[str, Any]:
     with _connection() as conn:
         cursor = conn.cursor()

@@ -8,7 +8,7 @@ from schemas import Conversation, ConversationList, Message, MessageResponse
 router = APIRouter()
 
 """ List of all conversation ids """
-@router.get("/all-conversations", response_model=ConversationList)
+@router.get("/conversations", response_model=ConversationList)
 def fetch_conversation_history():
     conversations = db.get_all_conversations()
     return {
@@ -23,7 +23,7 @@ def delete_conversation(conversation_id: int):
     return {"status": "ok"}
 
 """ Get sequences of messages for a conversation """
-@router.get("/conversations")
+@router.get("/messages")
 def get_messages_for_conversation(conversation_id: int):
     return db.get_messages_for_id(conversation_id)
 
