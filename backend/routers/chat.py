@@ -47,7 +47,7 @@ def message_agent(message: Message):
 
     # agent response
     messages = db.get_messages_for_id(conv_id)
-    response = agent.quick_message(messages=messages, sys_prompt=config.SYSTEM_PROMPT)
+    response = agent.quick_message(messages=messages)
     content = response["message"]["content"]
 
     # add agent message to table
@@ -56,8 +56,9 @@ def message_agent(message: Message):
     # create title for new conversations
     if is_new:
         messages = db.get_messages_for_id(conv_id)
-        res = agent.quick_message(messages=messages, sys_prompt=config.TITLE_GEN_PROMPT)
+        res = agent.create_title(messages=messages)
         title = res["message"]["content"]
         db.update_conversation_title(conv_id, title)
+        print(f"New title {title}")
 
     return obj
