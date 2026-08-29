@@ -19,6 +19,19 @@ enum AppSpacing {
 
     /// Chat content stops widening past this, so lines stay readable on a wide window.
     static let readableWidth: CGFloat = 720
+
+    /// Left/right inset shared by every sidebar row — New Chat, Scheduled, Plugins,
+    /// Recents, and each conversation title — so they line up with "Max" in the
+    /// header (which sits at its own AppSpacing.l padding, in SidebarView.header).
+    ///
+    /// `leading` here is set well below that l (16) on purpose: `.listStyle(.sidebar)`
+    /// appears to reserve its own baseline leading space — for selection/disclosure
+    /// chrome — on top of whatever `.listRowInsets` asks for, so matching `l` exactly
+    /// still left the rows visibly indented past "Max". This value is a strong first
+    /// correction, not a measured one — nudge it (further negative pulls rows further
+    /// left) while watching the sidebar #Preview live; that's faster than another
+    /// round trip through chat for a number only you can see landing correctly.
+    static let sidebarRowInsets = EdgeInsets(top: xs, leading: -2, bottom: xs, trailing: l)   // ← nudge `leading` here (more negative = further left)
 }
 
 /// Corner radii. Named by role rather than by number.

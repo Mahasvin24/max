@@ -33,12 +33,7 @@ struct ContentView: View {
                 .frame(minWidth: 520, minHeight: 400)
         }
         .toolbar {
-            ToolbarItem(placement: .navigation) {
-                Text(Constants.maxString)
-                    .font(AppFont.toolbarTitle)
-            }
-            .sharedBackgroundVisibility(.hidden)
-
+            // "Max" now lives in the sidebar's own header row, not here.
             ToolbarItem(placement: .principal) {
                 // Inert for now — no Work mode behind it yet.
                 SegmentedPill(options: ["Chat", "Work"], selection: $section)
