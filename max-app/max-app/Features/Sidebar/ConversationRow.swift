@@ -26,7 +26,7 @@ struct ConversationRow: View {
             .truncationMode(.tail)
             .frame(maxWidth: .infinity, alignment: .leading)
             .contentShape(.rect)
-            .listRowInsets(AppSpacing.sidebarRowInsets)  // ← left edge, shared with every other sidebar row
+            .listRowInsets(AppSpacing.sidebarRowInsets)  // ← same left edge as every other sidebar row
             .contextMenu {
                 Button("Delete", systemImage: "trash", role: .destructive, action: onDelete)
             }

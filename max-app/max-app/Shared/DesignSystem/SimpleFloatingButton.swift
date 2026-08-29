@@ -11,7 +11,9 @@
 //  Changes from the original:
 //    - Uses this app's IconButtonStyle in place of Enchanted's GrowingButton.
 //    - Uses .primary in place of Enchanted's Color.label.
-//    - Icon height 16 rather than 18, to match our composer's scale.
+//    - Icon height 16 rather than 18, to match our composer's scale. Now a `height`
+//      parameter (still defaulting to 16) rather than a hardcoded value, since the
+//      composer's "+" and mic buttons ended up wanting different sizes.
 //  Structure is otherwise unchanged.
 //
 //  Built from: Button, Image(systemName:).
@@ -21,6 +23,7 @@ import SwiftUI
 
 struct SimpleFloatingButton: View {
     var systemImage: String
+    var height: CGFloat = 16          // ← per-instance icon size; override at the call site
     var onClick: () -> Void
 
     var body: some View {
@@ -30,7 +33,7 @@ struct SimpleFloatingButton: View {
                 .resizable()
                 .scaledToFit()
                 .foregroundStyle(.primary)
-                .frame(height: 16)
+                .frame(height: height)
         }
         .buttonStyle(.icon)
         .contentShape(.rect)
@@ -38,6 +41,9 @@ struct SimpleFloatingButton: View {
 }
 
 #Preview {
-    SimpleFloatingButton(systemImage: "arrow.up", onClick: {})
-        .frame(width: 100, height: 100)
+    HStack(spacing: 20) {
+        SimpleFloatingButton(systemImage: "plus", height: 12, onClick: {})
+        SimpleFloatingButton(systemImage: "arrow.up", onClick: {})
+    }
+    .frame(width: 150, height: 100)
 }

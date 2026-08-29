@@ -24,11 +24,6 @@ struct SidebarView: View {
     /// list rather than one per row, so rows can't disagree about what's being deleted.
     @State private var pendingDeletion: Conversation?
 
-    /// Width every row icon sits in, so "New Chat" / "Scheduled" / "Plugins" text
-    /// all start at the same x position despite their SF Symbols having different
-    /// intrinsic widths (a pencil glyph isn't as wide as a puzzle piece).
-    private let iconColumnWidth: CGFloat = 26
-
     /// New Chat / Scheduled / Plugins row content. `Label` was dropped here: its
     /// icon+text size follows the ambient font, and that font isn't reliably honored
     /// under `.listStyle(.sidebar)` on macOS — this puts the size on the Text/Image
@@ -37,7 +32,7 @@ struct SidebarView: View {
         HStack(spacing: AppSpacing.s) {
             Image(systemName: systemImage)
                 .font(AppFont.sidebar)                          // ← icon size
-                .frame(width: iconColumnWidth, alignment: .center)
+                .frame(width: AppSpacing.sidebarIconColumnWidth, alignment: .center)
             Text(title)
                 .font(AppFont.sidebar)                           // ← row text size
         }
