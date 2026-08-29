@@ -92,7 +92,7 @@ def insert_message(conversation_id: int, role: str, content: str) -> dict[str, A
             SET updated_at = ?
             WHERE id = ?
             """,
-            (conversation_id, time)
+            (time, conversation_id)
         )
         id = cursor.lastrowid
         return {
