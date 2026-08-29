@@ -12,7 +12,11 @@ def quick_message(messages: list[Message], sys_prompt: str = config.SYSTEM_PROMP
     sys_msg = Message(role="system", content=sys_prompt)
     messages.insert(0, sys_msg)
 
-    return ollama.chat(model=config.MODEL, messages=messages)
+    return ollama.chat(model=config.MODEL, messages=messages, think=False)
 
 def thinking_message(messages: list[Message], sys_prompt: str | None = None):
-    ...
+    # System prompt
+    sys_msg = Message(role="system", content=sys_prompt)
+    messages.insert(0, sys_msg)
+    
+    return ollama.chat(model=config.MODEL, messages=messages, think=False)
