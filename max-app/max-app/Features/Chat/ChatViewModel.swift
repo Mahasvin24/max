@@ -23,6 +23,17 @@ class ChatViewModel {
     }
     private(set) var conversationListStatus: FetchStatus = .notStarted
 
+    /// True while a reply is in flight. The round trip is several seconds, so the
+    /// UI has to say something or it reads as broken.
+    private(set) var isSending = false
+
+    /// Last failure, in a form the UI can show. Nil when the last call succeeded.
+    private(set) var lastError: String?
+
+    func dismissError() {
+        lastError = nil
+    }
+
     func refresh() async {
         conversation = Conversation()
         messages = []
@@ -41,7 +52,7 @@ class ChatViewModel {
             conversationListStatus = .success
         } catch {
             conversationListStatus = .failed
-            print("Failed to fetch all conversations. \(error.localizedDescription)")
+            lastError = error.localizedDescription
         }
     }
 
@@ -49,7 +60,7 @@ class ChatViewModel {
         do {
             try await APIClient.Chat.deleteConversation(conversationId: id)
         } catch {
-            print("Failed to delete conversation. \(error.localizedDescription)")
+            lastError = error.localizedDescription
             return
         }
         if conversation.conversationId == id {
@@ -64,12 +75,12 @@ class ChatViewModel {
         do {
             response = try await APIClient.Chat.messages(conversationId: id)
         } catch {
-            print("Failed to fetch conversation for id \(id). \(error.localizedDescription)")
+            lastError = error.localizedDescription
             return
         }
 
         guard let newConvo = conversationList.conversations.first(where: { $0.conversationId == id }) else {
-            print("Unexpected: no error from fetchConversation(id: Int) but conversation not found in conversationList")
+            lastError = "Conversation \(id) is no longer in the list."
             return
         }
         conversation = newConvo
@@ -83,11 +94,15 @@ class ChatViewModel {
 
         let isNew = conversation.isNew
 
+        isSending = true
+        lastError = nil
+        defer { isSending = false }
+
         let res: MessageResponse
         do {
             res = try await APIClient.Chat.sendMessage(conversation: conversation, content: text)
         } catch {
-            print("Failed to send message. \(error.localizedDescription)")
+            lastError = error.localizedDescription
             return
         }
 

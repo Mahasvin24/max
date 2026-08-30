@@ -2,49 +2,74 @@
 //  ContentView.swift
 //  max-app
 //
-//  Created by Mahasvin Shanmugapriya Manikandan on 7/7/26.
+//  Provenance: HAND-BUILT
+//  Built from: NavigationSplitView, .toolbar, ToolbarItem, .task.
 //
 
 import SwiftUI
 
+/// App shell. Owns the view model and wires the sidebar to the chat pane.
 struct ContentView: View {
-    private enum Page {
-        case chat
-        case productivity
-        case settings
-    }
-    
-    @State private var selected: Page = .chat
-    
+    /// `@State`, not `let`: with `@Observable`, the view must own the instance so
+    /// it survives re-initialisation of this struct.
+    @State private var viewModel = ChatViewModel()
+    @State private var draft = ""
+    @State private var selection: Int?
+    @State private var section = "Chat"
+
     var body: some View {
         NavigationSplitView {
-            List(selection: $selected) {
-                // chat
-                Label(Constants.chatString, systemImage: Constants.chatIconString)
-                    .tag(Page.chat)
-                
-                // productivity
-                Label(Constants.productivityString, systemImage: Constants.productivityIconString)
-                    .tag(Page.productivity)
-                
-                // settings
-                Label(Constants.settingsString, systemImage: Constants.settingsIconString)
-                    .tag(Page.settings)
-            }
-            .listStyle(.sidebar)
+            SidebarView(
+                conversations: viewModel.conversationList.conversations,
+                selection: $selection,
+                onNewChat: newChat,
+                onDelete: { conversation in
+                    Task { await viewModel.deleteConversation(id: conversation.conversationId) }
+                }
+            )
+            .navigationSplitViewColumnWidth(min: 270, ideal: 330, max: 450)
         } detail: {
-            switch selected {
-            case .chat:
-                ChatView()
-                    .frame(minWidth: 500, minHeight: 300)
-            case .productivity:
-                ProductivityView()
-                    .frame(minWidth: 500, minHeight: 300)
-            case .settings:
-                SettingsView()
-                    .frame(minWidth: 500, minHeight: 300)
-            }
+            ChatScreen(viewModel: viewModel, text: $draft)
+                .frame(minWidth: 520, minHeight: 400)
         }
+        .toolbar {
+            // "Max" now lives in the sidebar's own header row, not here.
+            ToolbarItem(placement: .principal) {
+                // Inert for now — no Work mode behind it yet.
+                SegmentedPill(options: ["Chat", "Work"], selection: $section)
+            }
+
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    // Placeholder: settings aren't built yet.
+                } label: {
+                    Image(systemName: "gearshape")
+                        .font(AppFont.toolbarIcon)
+                }
+                .buttonStyle(.plain)
+                .help("Settings — not built yet")
+                .accessibilityLabel("Settings")
+            }
+            .sharedBackgroundVisibility(.hidden)
+        }
+        .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
+        .task { await viewModel.refresh() }
+        .onChange(of: selection) { _, newValue in
+            guard let newValue, newValue != viewModel.conversation.conversationId else { return }
+            Task { await viewModel.fetchConversation(id: newValue) }
+        }
+        .onChange(of: viewModel.conversation.conversationId) { _, newValue in
+            // Keep the sidebar highlight in step when the model changes conversation
+            // on its own — starting a new chat, or sending the first message.
+            selection = viewModel.conversation.isNew ? nil : newValue
+        }
+    }
+
+
+    private func newChat() {
+        selection = nil
+        draft = ""
+        Task { await viewModel.refresh() }
     }
 }
 
