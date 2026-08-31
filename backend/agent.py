@@ -1,33 +1,45 @@
-import ollama
+from groq import Groq
 from typing import TypedDict
+from dotenv import load_dotenv
 
 import config
+
+load_dotenv() # groq key
 
 class Message(TypedDict):
     role: str
     content: str
 
-def quick_message(messages: list[Message]):
-    # System prompt
-    messages = messages[:]
-    sys_msg = Message(role="system", content=config.SYSTEM_PROMPT)
-    messages.insert(0, sys_msg)
+client = Groq()
 
-    return ollama.chat(model=config.MODEL, messages=messages, think=False)
 
-def thinking_message(messages: list[Message]):
+def _call_agent(messages: list[Message], reasoning_effort: str) -> str:
+    payload = [Message(role=m["role"], content=m["content"]) for m in messages]
+
+    response = client.chat.completions.create(
+        model=config.MODEL,
+        messages=payload,
+        reasoning_effort=reasoning_effort,
+    )
+    return response.choices[0].message.content
+
+
+def quick_message(messages: list[Message]) -> str:
     # System prompt
-    messages = messages[:]
     sys_msg = Message(role="system", content=config.SYSTEM_PROMPT)
-    messages.insert(0, sys_msg)
-    
-    return ollama.chat(model=config.MODEL, messages=messages, think=True)
+
+    return _call_agent([sys_msg] + list(messages), reasoning_effort="none")
+
+def thinking_message(messages: list[Message]) -> str:
+    # System prompt
+    sys_msg = Message(role="system", content=config.SYSTEM_PROMPT)
+
+    return _call_agent([sys_msg] + list(messages), reasoning_effort="default")
 
 """ Create titles for conversations. """
-def create_title(messages: list[Message]):
-    # System rompt to create title
-    messages = messages[:]
+def create_title(messages: list[Message]) -> str:
+    # System prompts
+    sys_msg = Message(role="system", content=config.SYSTEM_PROMPT)
     title_prompt = Message(role="system", content=config.TITLE_GEN_PROMPT)
-    messages.append(title_prompt)
 
-    return ollama.chat(model=config.MODEL, messages=messages, think=False)
+    return _call_agent([sys_msg] + [title_prompt] + list(messages), reasoning_effort="none")

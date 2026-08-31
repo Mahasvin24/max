@@ -1,3 +1,4 @@
-ollama 
+groq
 fastapi
 fastapi[standard]
+python-dotenv

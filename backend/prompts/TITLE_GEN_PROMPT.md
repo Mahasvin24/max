@@ -1,4 +1,4 @@
-Generate a short title for this conversation based on the previous messages in this conversation.
+Generate a short title for this conversation based on the exchanges of messages between the user and the assistant in this conversation. 
 
 Reply with ONLY the title. No quotes, no punctuation at the end, no preamble
 like "Title:", no explanation. Do not answer the message itself.
