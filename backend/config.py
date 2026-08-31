@@ -1,6 +1,6 @@
 # Global variables
 
-MODEL = "qwen3:8b"
+MODEL = "qwen/qwen3.8-27b"
 
 DATABASE = "data.db"
 
