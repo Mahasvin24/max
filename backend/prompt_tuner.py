@@ -1,11 +1,17 @@
-import ollama
 from typing import TypedDict
 
 import config
+from agent import client  # reuse agent's configured Groq client (it calls load_dotenv)
 
 class Message(TypedDict):
     role: str
     content: str
+
+# How hard the model thinks before answering.
+# qwen3.8-27b accepts: "none", "default", "low", "medium", "high".
+# gpt-oss models only accept "low", "medium", "high".
+# "none" matches what agent.quick_message uses in production.
+REASONING_EFFORT = "none"
 
 testing_messages = [
     "hey, how are you?",
@@ -49,6 +55,7 @@ scenarios = [
 
 print("- - - - - - - - -\n")
 print("System prompt testing routine for Max\n")
+print(f"model: {config.MODEL}   reasoning_effort: {REASONING_EFFORT}\n")
 print("- - - - - - - - -")
 print("\n")
 
@@ -60,8 +67,11 @@ for user_msg, expected_msg, scenario in zip(testing_messages, expected_responses
         Message(role="user", content=user_msg)
     ]
 
-    res = ollama.chat(model=config.MODEL, messages=messages, think=True)["message"]["content"]
-    res = res.split("</think")[-1].strip()
+    res = client.chat.completions.create(
+        model=config.MODEL,
+        messages=messages,
+        reasoning_effort=REASONING_EFFORT,
+    ).choices[0].message.content.strip()
 
     # Output
     print(f"Scenario {i}: {scenario}")
