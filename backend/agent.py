@@ -13,27 +13,33 @@ class Message(TypedDict):
 client = Groq()
 
 
-def quick_message(messages: list[Message]):
-    # System prompt
-    messages = messages[:]
-    sys_msg = Message(role="system", content=config.SYSTEM_PROMPT)
-    messages.insert(0, sys_msg)
+def _call_agent(messages: list[Message], reasoning_effort: str) -> str:
+    payload = [Message(role=m["role"], content=m["content"]) for m in messages]
 
-    return client.chat.completions.create(model=config.MODEL, messages=messages, reasoning_effort="none")
+    response = client.chat.completions.create(
+        model=config.MODEL,
+        messages=payload,
+        reasoning_effort=reasoning_effort,
+    )
+    return response.choices[0].message.content
 
-def thinking_message(messages: list[Message]):
+
+def quick_message(messages: list[Message]) -> str:
     # System prompt
-    messages = messages[:]
     sys_msg = Message(role="system", content=config.SYSTEM_PROMPT)
-    messages.insert(0, sys_msg)
-    
-    return client.chat.completions.create(model=config.MODEL, messages=messages, reasoning_effort="default")
+
+    return _call_agent([sys_msg] + list(messages), reasoning_effort="none")
+
+def thinking_message(messages: list[Message]) -> str:
+    # System prompt
+    sys_msg = Message(role="system", content=config.SYSTEM_PROMPT)
+
+    return _call_agent([sys_msg] + list(messages), reasoning_effort="default")
 
 """ Create titles for conversations. """
-def create_title(messages: list[Message]):
-    # System rompt to create title
-    messages = messages[:]
+def create_title(messages: list[Message]) -> str:
+    # System prompts
+    sys_msg = Message(role="system", content=config.SYSTEM_PROMPT)
     title_prompt = Message(role="system", content=config.TITLE_GEN_PROMPT)
-    messages.append(title_prompt)
 
-    return client.chat.completions.create(model=config.MODEL, messages=messages, reasoning_effort="none")
+    return _call_agent([sys_msg] + [title_prompt] + list(messages), reasoning_effort="none")
