@@ -1,16 +1,12 @@
 from typing import TypedDict
 
 import config
-from agent import client  # reuse agent's configured Groq client (it calls load_dotenv)
+from agent import client  # resuse (dont want duplicate clients so)
 
 class Message(TypedDict):
     role: str
     content: str
 
-# How hard the model thinks before answering.
-# qwen3.8-27b accepts: "none", "default", "low", "medium", "high".
-# gpt-oss models only accept "low", "medium", "high".
-# "none" matches what agent.quick_message uses in production.
 REASONING_EFFORT = "none"
 
 testing_messages = [
@@ -26,7 +22,6 @@ testing_messages = [
     "I'm so behind. thinking I'll just skip sleep and grind through the night"
 ]
 
-# Fill these in with what a good reply looks like (same index as above).
 expected_responses = [
     "hey",  # 0. greeting
     "It's frustrating, but it bad interviews are bound to happen. I'm curious what happened though.",  # 1. failed interview
