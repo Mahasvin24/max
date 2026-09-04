@@ -12,6 +12,8 @@ class Message(TypedDict):
 
 client = Groq()
 
+MAX_OUTPUT_TOKENS = 1000
+
 
 def _call_agent(messages: list[Message], reasoning_effort: str) -> str:
     payload = [Message(role=m["role"], content=m["content"]) for m in messages]
@@ -20,6 +22,11 @@ def _call_agent(messages: list[Message], reasoning_effort: str) -> str:
         model=config.MODEL,
         messages=payload,
         reasoning_effort=reasoning_effort,
+        # Without this, Groq assumes the model's default ceiling (~1068 tokens) as
+        # the request's expected output, which alone exceeds the free tier's
+        # 1000 output-tokens-per-minute limit and 429s. Replies run 10-20 tokens;
+        # the longest legitimate answer (a full explanation) is around 170.
+        max_completion_tokens=MAX_OUTPUT_TOKENS,
     )
     return response.choices[0].message.content
 

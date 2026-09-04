@@ -1,6 +1,7 @@
 from typing import TypedDict
 
 import config
+import agent
 from agent import client  # resuse (dont want duplicate clients so)
 
 class Message(TypedDict):
@@ -66,13 +67,14 @@ for user_msg, expected_msg, scenario in zip(testing_messages, expected_responses
         model=config.MODEL,
         messages=messages,
         reasoning_effort=REASONING_EFFORT,
+        max_completion_tokens=agent.MAX_OUTPUT_TOKENS,
     ).choices[0].message.content.strip()
 
     # Output
     print(f"Scenario {i}: {scenario}")
     print(f"User     :  \"{user_msg}\"")
     print(f"Assistant:  \"{res}\"")
-    print(f"Expected :  \"{expected_msg}\"")
+    # print(f"Expected :  \"{expected_msg}\"")
     print("\n\n\n")
 
     i += 1
