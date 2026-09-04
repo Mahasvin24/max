@@ -14,7 +14,6 @@ client = Groq()
 
 MAX_OUTPUT_TOKENS = 1000
 
-
 def _call_agent(messages: list[Message], reasoning_effort: str) -> str:
     payload = [Message(role=m["role"], content=m["content"]) for m in messages]
 
@@ -22,6 +21,7 @@ def _call_agent(messages: list[Message], reasoning_effort: str) -> str:
         model=config.MODEL,
         messages=payload,
         reasoning_effort=reasoning_effort,
+        temperature=0,
         # Without this, Groq assumes the model's default ceiling (~1068 tokens) as
         # the request's expected output, which alone exceeds the free tier's
         # 1000 output-tokens-per-minute limit and 429s. Replies run 10-20 tokens;
@@ -35,13 +35,13 @@ def quick_message(messages: list[Message]) -> str:
     # System prompt
     sys_msg = Message(role="system", content=config.SYSTEM_PROMPT)
 
-    return _call_agent([sys_msg] + list(messages), reasoning_effort="none")
+    return _call_agent([sys_msg] + list(messages), reasoning_effort="low")
 
 def thinking_message(messages: list[Message]) -> str:
     # System prompt
     sys_msg = Message(role="system", content=config.SYSTEM_PROMPT)
 
-    return _call_agent([sys_msg] + list(messages), reasoning_effort="default")
+    return _call_agent([sys_msg] + list(messages), reasoning_effort="high")
 
 """ Create titles for conversations. """
 def create_title(messages: list[Message]) -> str:
@@ -49,4 +49,4 @@ def create_title(messages: list[Message]) -> str:
     sys_msg = Message(role="system", content=config.SYSTEM_PROMPT)
     title_prompt = Message(role="system", content=config.TITLE_GEN_PROMPT)
 
-    return _call_agent([sys_msg] + [title_prompt] + list(messages), reasoning_effort="none")
+    return _call_agent([sys_msg] + [title_prompt] + list(messages), reasoning_effort="low")

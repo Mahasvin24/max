@@ -1,6 +1,6 @@
 # Global variables
 
-MODEL = "qwen/qwen3.8-27b"
+MODEL = "openai/gpt-oss-120b"
 
 DATABASE = "data.db"
 

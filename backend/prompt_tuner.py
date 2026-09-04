@@ -8,7 +8,9 @@ class Message(TypedDict):
     role: str
     content: str
 
-REASONING_EFFORT = "none"
+# Valid values depend on config.MODEL: qwen accepts none/default/low/medium/high,
+# gpt-oss only accepts low/medium/high. Update this when the model changes.
+REASONING_EFFORT = "low"
 
 testing_messages = [
     "hey, how are you?",
@@ -67,6 +69,7 @@ for user_msg, expected_msg, scenario in zip(testing_messages, expected_responses
         model=config.MODEL,
         messages=messages,
         reasoning_effort=REASONING_EFFORT,
+        temperature=0,
         max_completion_tokens=agent.MAX_OUTPUT_TOKENS,
     ).choices[0].message.content.strip()
 
