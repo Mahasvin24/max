@@ -21,7 +21,16 @@ rebuilding.
 | Apple SwiftUI | — | all structural components |
 | OpenAI Apps SDK UI design tokens | MIT | colour values in `Assets.xcassets` |
 | [gluonfield/enchanted](https://github.com/gluonfield/enchanted) | Apache-2.0 | composer, floating icon button |
+| [gonzalezreal/swift-markdown-ui](https://github.com/gonzalezreal/swift-markdown-ui) | MIT | assistant reply Markdown/table rendering |
 
 Attribution and the full Apache-2.0 text live in `THIRD_PARTY/`. Apache-2.0 section
 4(b) requires stating changes, which is what each adapted file's `Changes from the
 original` block is for — keep it accurate when editing those files.
+
+swift-markdown-ui is a live SPM package dependency, not a vendored/adapted copy — the
+first case of "reuse" taking that form here. There's no corresponding file under
+`THIRD_PARTY/` for it the way there is for enchanted's Apache-2.0 text; its license is
+tracked by Xcode's own Package Dependencies license report instead. It pulls in two further packages transitively, both resolved automatically, not
+vendored: [swiftlang/swift-cmark](https://github.com/swiftlang/swift-cmark) (the GFM
+parser, BSD-2-Clause) and [gonzalezreal/NetworkImage](https://github.com/gonzalezreal/NetworkImage)
+(image loading for Markdown images, MIT).

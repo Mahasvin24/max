@@ -3,8 +3,10 @@
 //  max-app
 //
 //  Provenance: HAND-BUILT
-//  Built from: Text, HStack — no third-party code.
+//  Built from: HStack — renders via MarkdownUI (gonzalezreal/swift-markdown-ui, MIT),
+//  see Markdown/MarkdownTheme.swift.
 
+import MarkdownUI
 import SwiftUI
 
 /// A message from Max: full width, no bubble, no avatar.
@@ -16,31 +18,11 @@ struct AssistantMessageView: View {
 
     var body: some View {
         HStack {
-            Text(content.renderingMarkdown)
-                .messageTextStyle()
+            Markdown(content)
+                .markdownTheme(.max)
+                .textSelection(.enabled)
             Spacer(minLength: 0)
         }
-    }
-}
-
-private extension String {
-    /// Parses the model's reply as Markdown (bold, italics, inline code,
-    /// links, code blocks) for display. Falls back to the raw string — rather
-    /// than an empty bubble — on the rare input `AttributedString` can't
-    /// parse at all.
-    var renderingMarkdown: AttributedString {
-        // AttributedString's Markdown parser is CommonMark-only: raw inline
-        // HTML like `<br>` (which the model sometimes emits inside table
-        // cells) isn't interpreted and would otherwise show up as literal
-        // text. Swap it for a real newline before parsing.
-        let normalized = replacingOccurrences(
-            of: #"<br\s*/?>"#, with: "\n",
-            options: [.regularExpression, .caseInsensitive]
-        )
-        return (try? AttributedString(
-            markdown: normalized,
-            options: .init(interpretedSyntax: .full)
-        )) ?? AttributedString(normalized)
     }
 }
 
@@ -53,8 +35,21 @@ private extension String {
     ```python
     def reverse(head):
         prev = None
+        cur = head
+        while cur:
+            nxt = cur.next
+            cur.next = prev
+            prev, cur = cur, nxt
         return prev
     ```
+
+    | Benefit | Why it matters |
+    |---|---|
+    | Speed | Generates boilerplate in seconds. |
+    | Learning | Shows idiomatic patterns for unfamiliar APIs. |
+
+    - Cuts boilerplate time
+    - Speeds up prototyping
     """)
     .padding()
     .frame(width: 560)
