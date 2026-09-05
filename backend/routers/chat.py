@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import StreamingResponse
 
 import agent
-import config
 import database as db
 from schemas import Conversation, ConversationList, Message, MessageResponse
 
@@ -28,7 +28,7 @@ def get_messages_for_conversation(conversation_id: int):
     return db.get_messages_for_id(conversation_id)
 
 """ Send a message and get agent response. """
-@router.post("/messages", response_model=MessageResponse)
+@router.post("/messages")
 def message_agent(message: Message):
     # Create new conversation conversation_id == -1
     is_new = message.conversation.conversation_id == -1
@@ -47,16 +47,39 @@ def message_agent(message: Message):
 
     # agent response
     messages = db.get_messages_for_id(conv_id)
-    content = agent.quick_message(messages=messages)
 
-    # add agent message to table
-    obj = db.insert_message(conv_id, "assistant", content)
+    def stream(messages):
+        pieces = []
+        for chunk in agent.message(messages=messages):
+            # stream
+            piece = chunk.choices[0].delta.content
+            if piece:
+                pieces.append(piece)
+                yield sse_format(piece)
 
-    # create title for new conversations
-    if is_new:
-        messages = db.get_messages_for_id(conv_id)
-        title = agent.create_title(messages=messages)
-        db.update_conversation_title(conv_id, title)
-        print(f"New title: {title}")
+        # add agent message to table
+        content = "".join(pieces)
+        obj = db.insert_message(conv_id, "assistant", content)
 
-    return obj
+        # create title for new conversations
+        if is_new:
+            messages = db.get_messages_for_id(conv_id)
+            title = agent.create_title(messages=messages)
+            db.update_conversation_title(conv_id, title)
+            print(f"New title: {title}") # DEBUG
+
+        # final return with metadata
+        yield sse_format(data=MessageResponse(**obj).model_dump_json(), event="done")
+
+    return StreamingResponse(stream(messages), media_type="text/event-stream")
+
+"""
+-----  Helper  -----
+"""
+
+def sse_format(data: str = "", event: str | None = None):
+    lines = data.split("\n")
+    res = "".join(f"data: {line}\n" for line in lines) + "\n"
+    if event:
+        res = f"event: {event}\n" + res
+    return res
