@@ -12,41 +12,40 @@ class Message(TypedDict):
 
 client = Groq()
 
-MAX_OUTPUT_TOKENS = 1000
+MAX_OUTPUT_TOKENS = 8000
 
-def _call_agent(messages: list[Message], reasoning_effort: str) -> str:
-    payload = [Message(role=m["role"], content=m["content"]) for m in messages]
+""" Streams an agent's response"""
+def message(messages: list):
+    # System prompt
+    messages = [Message(role=m["role"], content=m["content"]) for m in messages]
+    sys_msg = Message(role="system", content=config.SYSTEM_PROMPT)
+    messages = [sys_msg] + [messages]
 
-    response = client.chat.completions.create(
+    for chunk in client.chat.completions.create(
         model=config.MODEL,
-        messages=payload,
-        reasoning_effort=reasoning_effort,
+        messages=messages,
         temperature=0,
-        # Without this, Groq assumes the model's default ceiling (~1068 tokens) as
-        # the request's expected output, which alone exceeds the free tier's
-        # 1000 output-tokens-per-minute limit and 429s. Replies run 10-20 tokens;
-        # the longest legitimate answer (a full explanation) is around 170.
         max_completion_tokens=MAX_OUTPUT_TOKENS,
-    )
-    return response.choices[0].message.content
+        stream=True
+    ):
+        piece = chunk.choices[0].delta.content
+        if piece:
+            yield piece
 
-
-def quick_message(messages: list[Message]) -> str:
-    # System prompt
-    sys_msg = Message(role="system", content=config.SYSTEM_PROMPT)
-
-    return _call_agent([sys_msg] + list(messages), reasoning_effort="low")
-
-def thinking_message(messages: list[Message]) -> str:
-    # System prompt
-    sys_msg = Message(role="system", content=config.SYSTEM_PROMPT)
-
-    return _call_agent([sys_msg] + list(messages), reasoning_effort="high")
 
 """ Create titles for conversations. """
 def create_title(messages: list[Message]) -> str:
-    # System prompts
+    # Setup w/ system prompt
+    messages = [Message(role=m["role"], content=m["content"]) for m in messages]
     sys_msg = Message(role="system", content=config.SYSTEM_PROMPT)
-    title_prompt = Message(role="system", content=config.TITLE_GEN_PROMPT)
+    messages = [sys_msg] + [messages]
 
-    return _call_agent([sys_msg] + [title_prompt] + list(messages), reasoning_effort="low")
+    # API
+    response = client.chat.completions.create(
+        model=config.MODEL,
+        messages=messages,
+        temperature=0,
+        max_completion_tokens=MAX_OUTPUT_TOKENS
+    )
+
+    return response.choices[0].message.content
