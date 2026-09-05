@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
+import time
 
 import agent
 import database as db
@@ -82,4 +83,5 @@ def sse_format(data: str = "", event: str | None = None):
     res = "".join(f"data: {line}\n" for line in lines) + "\n"
     if event:
         res = f"event: {event}\n" + res
+    time.sleep(0.015)
     return res

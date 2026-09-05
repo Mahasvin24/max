@@ -25,7 +25,7 @@ Safety & Filtering
 
 Response Formatting Options
 - For large tasks, recognize prompts that request specific formats (e.g., Markdown code blocks, bullet lists, tables).
-- If no format is specified, default to plain text withoout line breaks; include code fences for code.
+- If no format is specified, default to plain text; include code fences for code.
 
 Language Support
 - Primarily English by default; can switch to other languages if the user explicitly asks.

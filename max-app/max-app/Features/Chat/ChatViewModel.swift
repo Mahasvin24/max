@@ -30,6 +30,19 @@ class ChatViewModel {
     /// Last failure, in a form the UI can show. Nil when the last call succeeded.
     private(set) var lastError: String?
 
+    /// Counts down from 0 to hand out ids for locally-echoed messages that
+    /// don't have a server-assigned one yet. Must be unique per pending
+    /// message, not a fixed sentinel: `messages` is diffed by `id`
+    /// (`MessageResponse: Identifiable`), and two rows sharing one id — e.g.
+    /// two user turns both hardcoded to `-1` — makes SwiftUI's `ForEach`
+    /// lose track of which view belongs to which row, which is what caused
+    /// bubbles to render blank on scroll.
+    private var nextLocalID = 0
+    private func makeLocalID() -> Int {
+        nextLocalID -= 1
+        return nextLocalID
+    }
+
     func dismissError() {
         lastError = nil
     }
@@ -88,28 +101,58 @@ class ChatViewModel {
     }
 
     func sendMessage(text: String) async {
-        // Note: we could be more efficient by just creating the two messages as MessageResponse types
-        // and appending that to the array. It's possibe then that we differ from server but I think
-        // that it could still be fine.
-
+        // Echoed locally rather than re-fetched from the server: the user's
+        // turn shows immediately, and the assistant's turn is appended once
+        // its first piece of text actually arrives (until then `isSending`
+        // alone carries the "waiting" state, via ThinkingIndicator).
         let isNew = conversation.isNew
+        let pendingConversationId = conversation.conversationId
 
         isSending = true
         lastError = nil
         defer { isSending = false }
 
-        let res: MessageResponse
+        messages.append(MessageResponse(
+            conversationId: pendingConversationId, id: makeLocalID(),
+            role: "user", content: text, createdAt: ""
+        ))
+
+        var assistantIndex: Int?
+
         do {
-            res = try await APIClient.Chat.sendMessage(conversation: conversation, content: text)
+            for try await event in APIClient.Chat.streamMessage(conversation: conversation, content: text) {
+                switch event {
+                case .chunk(let piece):
+                    if let index = assistantIndex {
+                        messages[index].content += piece
+                    } else {
+                        isSending = false // swap the "thinking" dots for the growing reply
+                        assistantIndex = messages.count
+                        messages.append(MessageResponse(
+                            conversationId: pendingConversationId, id: makeLocalID(),
+                            role: "assistant", content: piece, createdAt: ""
+                        ))
+                    }
+                case .done(let response):
+                    if let index = assistantIndex {
+                        messages[index] = response
+                    } else {
+                        messages.append(response) // model returned no content at all
+                    }
+                    // Only known here: the conversation this reply actually landed
+                    // in, with its real (server-assigned) id. Update our copy so a
+                    // second message in the same conversation doesn't ask the
+                    // backend to create *another* new conversation.
+                    if isNew {
+                        await fetchAllConversations()
+                        if let updated = conversationList.conversations.first(where: { $0.conversationId == response.conversationId }) {
+                            conversation = updated
+                        }
+                    }
+                }
+            }
         } catch {
             lastError = error.localizedDescription
-            return
         }
-
-        // update with the new data
-        if isNew {
-            await fetchAllConversations()
-        }
-        await fetchConversation(id: res.conversationId)
     }
 }

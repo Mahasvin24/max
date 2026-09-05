@@ -16,15 +16,46 @@ struct AssistantMessageView: View {
 
     var body: some View {
         HStack {
-            Text(content)
+            Text(content.renderingMarkdown)
                 .messageTextStyle()
             Spacer(minLength: 0)
         }
     }
 }
 
+private extension String {
+    /// Parses the model's reply as Markdown (bold, italics, inline code,
+    /// links, code blocks) for display. Falls back to the raw string — rather
+    /// than an empty bubble — on the rare input `AttributedString` can't
+    /// parse at all.
+    var renderingMarkdown: AttributedString {
+        // AttributedString's Markdown parser is CommonMark-only: raw inline
+        // HTML like `<br>` (which the model sometimes emits inside table
+        // cells) isn't interpreted and would otherwise show up as literal
+        // text. Swap it for a real newline before parsing.
+        let normalized = replacingOccurrences(
+            of: #"<br\s*/?>"#, with: "\n",
+            options: [.regularExpression, .caseInsensitive]
+        )
+        return (try? AttributedString(
+            markdown: normalized,
+            options: .init(interpretedSyntax: .full)
+        )) ?? AttributedString(normalized)
+    }
+}
+
 #Preview {
-    AssistantMessageView(content: "Tokyo. It has been the capital since 1868, when the emperor moved the court there from Kyoto.")
-        .padding()
-        .frame(width: 560)
+    AssistantMessageView(content: """
+    Tokyo. It has been the capital since 1868, when the emperor moved the court there from Kyoto.
+
+    A **bold** claim, some *emphasis*, and `inline code`:
+
+    ```python
+    def reverse(head):
+        prev = None
+        return prev
+    ```
+    """)
+    .padding()
+    .frame(width: 560)
 }
