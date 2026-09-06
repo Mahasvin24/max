@@ -39,11 +39,18 @@ enum AppSpacing {
     /// `leading` here is set well below `l` (16) on purpose: `.listStyle(.sidebar)`
     /// appears to reserve its own baseline leading space — for selection/disclosure
     /// chrome — on top of whatever `.listRowInsets` asks for, so matching `l` exactly
-    /// still left the rows visibly indented past "Max". This value is a strong first
-    /// correction, not a measured one — nudge it (further negative pulls rows further
-    /// left) while watching the sidebar #Preview live; that's faster than another
-    /// round trip through chat for a number only you can see landing correctly.
-    static let sidebarRowInsets = EdgeInsets(top: xs, leading: -2, bottom: xs, trailing: l)   // ← nudge `leading` here (more negative = further left)
+    /// still left the rows visibly indented past "Max". This value is a first
+    /// correction, not a measured one — nudge it (more positive pulls rows right,
+    /// more negative pulls them left) while watching the sidebar #Preview live;
+    /// that's faster than another round trip through chat for a number only you can
+    /// see landing correctly.
+    ///
+    /// Was `-2`; moved to `4` after feedback that rows sat too far left. Couldn't
+    /// confirm the new value against a live screenshot this round (the built app
+    /// needs Xcode's own launch to show a window in this environment, and Xcode's
+    /// Canvas isn't drivable without keyboard access here) — eyeball it against the
+    /// buttons' padding and nudge again if it's not quite there yet.
+    static let sidebarRowInsets = EdgeInsets(top: xs, leading: 4, bottom: xs, trailing: l)   // ← nudge `leading` here (more positive = further right)
 
     /// Width of the icon column in New Chat / Scheduled / Plugins.
     static let sidebarIconColumnWidth: CGFloat = 26
