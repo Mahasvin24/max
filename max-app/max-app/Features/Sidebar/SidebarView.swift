@@ -3,9 +3,11 @@
 //  max-app
 //
 //  Provenance: HAND-BUILT
-//  Built from: List(selection:), Section, .confirmationDialog, .listStyle(.sidebar),
+//  Built from: List(selection:), .confirmationDialog, .listStyle(.sidebar),
 //  .listRowInsets, .selectionDisabled. Row content (icon + text) is a plain HStack
-//  rather than Label — see the note on row(_:systemImage:) for why.
+//  rather than Label — see the note on row(_:systemImage:) for why. New Chat/
+//  Scheduled/Plugins sit outside the List entirely (see pinnedActions) so only
+//  Recents scrolls — they use plain .padding/.frame in place of List's row modifiers.
 
 import SwiftUI
 
@@ -28,11 +30,26 @@ struct SidebarView: View {
     /// icon+text size follows the ambient font, and that font isn't reliably honored
     /// under `.listStyle(.sidebar)` on macOS — this puts the size on the Text/Image
     /// directly, so it actually changes when AppFont.sidebar changes.
+    ///
+    /// The icon's frame alignment is `.leading`, not `.center`: the row's own inset
+    /// gives every row (icon or bare text) the same left edge for its *box*, but an
+    /// SF Symbol glyph centered in a wider-than-it-needs column visually starts well
+    /// right of that edge regardless of the row's own inset — the inset can't fix an
+    /// offset that comes from the icon's own alignment, only leading can. `.frame`'s
+    /// reserved width doesn't change with alignment, so this doesn't move the text
+    /// that follows.
+    ///
+    /// The `.offset(x:)` below is a final ~1pt visual nudge on top of that — offset
+    /// only shifts where the glyph is drawn, it isn't part of layout, so it moves
+    /// the icon alone without touching the column width or the text's position.
+    /// Adjust this number, not `sidebarIconColumnWidth`, if the icon needs to move
+    /// again — the column width changes the icon-text gap, not the icon's own edge.
     private func row(_ title: String, systemImage: String) -> some View {
         HStack(spacing: AppSpacing.s) {
             Image(systemName: systemImage)
                 .font(AppFont.sidebar)                          // ← icon size
-                .frame(width: AppSpacing.sidebarIconColumnWidth, alignment: .center)
+                .frame(width: AppSpacing.sidebarIconColumnWidth, alignment: .leading)
+                .offset(x: -1)                                   // ← icon-only nudge; +right / -left
             Text(title)
                 .font(AppFont.sidebar)                           // ← row text size
         }
@@ -77,56 +94,74 @@ struct SidebarView: View {
         .padding(.bottom, AppSpacing.s)                     // ← gap below "Max" (above New Chat)
     }
 
+    /// New Chat / Scheduled / Plugins, fixed above the scrolling Recents list — not
+    /// List rows anymore, so `.listRowInsets` becomes plain `.padding`, but with
+    /// `AppSpacing.pinnedActionInsets`, not `sidebarRowInsets` — that value is tuned
+    /// to counteract an indent `.listStyle(.sidebar)` adds for free, which doesn't
+    /// exist outside a List (see the note on `pinnedActionInsets`). `.frame(maxWidth:
+    /// .infinity, alignment: .leading)` + `.contentShape(.rect)` (ConversationRow's
+    /// own pattern) keeps the whole row tappable/hoverable edge-to-edge the way a
+    /// List row was for free.
+    ///
+    /// One thing this can't reproduce: `.listStyle(.sidebar)` gives native List rows
+    /// a subtle hover highlight capsule on macOS even when they're not selectable.
+    /// These three no longer get that — worth a look to see if it's missed, since I
+    /// can't check it live in this environment.
+    private var pinnedActions: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Button(action: onNewChat) {
+                row("New Chat", systemImage: "square.and.pencil")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(.rect)
+            }
+            .buttonStyle(.plain)
+            .padding(AppSpacing.pinnedActionInsets)
+
+            // Placeholders: present in the layout, deliberately inert for now.
+            row("Scheduled", systemImage: "clock")
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(.rect)
+                .help("Not built yet")
+                .padding(AppSpacing.pinnedActionInsets)
+            row("Plugins", systemImage: "puzzlepiece.extension")
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(.rect)
+                .help("Not built yet")
+                .padding(AppSpacing.pinnedActionInsets)
+
+            // Same air the old Section footer gave before Recents started.
+            Color.clear.frame(height: AppSpacing.xxl)
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             header
+            pinnedActions
 
+            // Only Recents scrolls now — New Chat/Scheduled/Plugins above are plain
+            // views, not part of this List, so they stay put.
             List(selection: $selection) {
-                // Every row below sets its own font and its own .listRowInsets
-                // (AppSpacing.sidebarRowInsets) rather than trusting what it inherits
-                // from the List — see the note on `row(_:systemImage:)` above.
-                Section {
-                    Button(action: onNewChat) {
-                        row("New Chat", systemImage: "square.and.pencil")
-                    }
-                    .buttonStyle(.plain)
+                // A plain row rather than Section's `header:` slot: a header gets
+                // its own system-controlled indent, separate from row insets, so
+                // it wouldn't line up with everything else no matter what we set
+                // above. `.selectionDisabled()` keeps it from highlighting like a
+                // clickable conversation.
+                Text("Recents")
+                    .font(AppFont.sidebarSectionHeader)
+                    .foregroundStyle(.secondary)
                     .listRowInsets(AppSpacing.sidebarRowInsets)
+                    .selectionDisabled()
 
-                    // Placeholders: present in the layout, deliberately inert for now.
-                    row("Scheduled", systemImage: "clock")
-                        .foregroundStyle(.secondary)
-                        .help("Not built yet")
-                        .listRowInsets(AppSpacing.sidebarRowInsets)
-                    row("Plugins", systemImage: "puzzlepiece.extension")
-                        .foregroundStyle(.secondary)
-                        .help("Not built yet")
-                        .listRowInsets(AppSpacing.sidebarRowInsets)
-                } footer: {
-                    // `.listSectionSpacing` is iOS-only; a clear spacer footer is the
-                    // macOS-native way to add extra air before the next section.
-                    Color.clear.frame(height: AppSpacing.xxl)
-                }
-
-                Section {
-                    // A plain row rather than Section's `header:` slot: a header gets
-                    // its own system-controlled indent, separate from row insets, so
-                    // it wouldn't line up with everything else no matter what we set
-                    // above. `.selectionDisabled()` keeps it from highlighting like a
-                    // clickable conversation.
-                    Text("Recents")
-                        .font(AppFont.sidebarSectionHeader)
-                        .foregroundStyle(.secondary)
-                        .listRowInsets(AppSpacing.sidebarRowInsets)
-                        .selectionDisabled()
-
-                    ForEach(conversations) { conversation in
-                        ConversationRow(conversation: conversation) {
-                            pendingDeletion = conversation
-                        }
-                        .tag(conversation.conversationId)
+                ForEach(conversations) { conversation in
+                    ConversationRow(conversation: conversation) {
+                        pendingDeletion = conversation
                     }
+                    .tag(conversation.conversationId)
                 }
-        }
+            }
             .listStyle(.sidebar)
             .scrollContentBackground(.hidden)
         }
