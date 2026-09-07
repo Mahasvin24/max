@@ -21,11 +21,8 @@ struct ConversationRow: View {
 
     var body: some View {
         Text(displayTitle)
-            .font(AppFont.sidebar)               // ← explicit: the List's ambient font isn't reliably honored under .listStyle(.sidebar) on macOS
-            .lineLimit(1)
-            .truncationMode(.tail)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .contentShape(.rect)
+            .sidebarRowTextStyle()
+            .sidebarRowShape()
             .listRowInsets(AppSpacing.sidebarRowInsets)  // ← same left edge as every other sidebar row
             .contextMenu {
                 Button("Delete", systemImage: "trash", role: .destructive, action: onDelete)

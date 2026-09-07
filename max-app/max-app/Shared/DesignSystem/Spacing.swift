@@ -20,17 +20,25 @@ enum AppSpacing {
     /// Chat content stops widening past this, so lines stay readable on a wide window.
     static let readableWidth: CGFloat = 720
 
-    /// Left/right inset for rows still living inside the Recents `List` — the
-    /// "Recents" header and each conversation title (see ConversationRow). New Chat/
-    /// Scheduled/Plugins used to share this too, back when they were List rows; they
-    /// aren't anymore (see `pinnedActionInsets`) — don't reuse this for them, it reads
-    /// as way too far left outside a List.
+    /// Left/right inset shared by every row in BOTH sidebar Lists — New Chat,
+    /// Scheduled, Plugins (SidebarView.pinnedActions, its own non-scrolling List) and
+    /// Recents/each conversation title (the scrolling List below it) — so all of
+    /// them, icon rows and bare-text rows alike, share one left edge with "Max" in
+    /// the header (its own AppSpacing.l padding, in SidebarView.header).
     ///
-    /// (There was a text-matching variant here briefly — aligning Recents with New
-    /// Chat's *text* instead of New Chat's *icon* — based on a misreading of "recents
-    /// text isn't aligned with the sidebar buttons" as being about the label text
-    /// specifically. It wasn't: the original ask was for Max/Recents/the buttons to
-    /// share one vertical line as whole units, which means the icon edge. That
+    /// There was a brief period where New Chat/Scheduled/Plugins were plain views
+    /// instead of List rows (to make Recents independently scrollable without a
+    /// second List) and needed a different, larger inset (`l`) to compensate for not
+    /// having List's hidden baseline space. That's no longer the case — they're a
+    /// second List now, not a plain VStack, specifically so they could go back to
+    /// sharing this exact value instead of approximating it. If they ever become
+    /// plain views again, re-derive rather than reusing this number as-is.
+    ///
+    /// (There was also a text-matching variant here briefly — aligning Recents with
+    /// New Chat's *text* instead of New Chat's *icon* — based on a misreading of
+    /// "recents text isn't aligned with the sidebar buttons" as being about the label
+    /// text specifically. It wasn't: the original ask was for Max/Recents/the buttons
+    /// to share one vertical line as whole units, which means the icon edge. That
     /// variant put Recents and every conversation title 34pt right of everything
     /// else. Reverted — don't reintroduce a second inset for this.)
     ///
@@ -43,16 +51,6 @@ enum AppSpacing {
     /// that's faster than another round trip through chat for a number only you can
     /// see landing correctly.
     static let sidebarRowInsets = EdgeInsets(top: xs, leading: 4, bottom: xs, trailing: l)   // ← nudge `leading` here (more positive = further right)
-
-    /// Left/right inset for New Chat/Scheduled/Plugins (SidebarView.pinnedActions) —
-    /// plain views, not List rows, ever since Recents became independently
-    /// scrollable. Matches `l`, the same margin `header` uses for "Max": that was
-    /// always the real target these rows aligned to — `sidebarRowInsets`'s smaller,
-    /// stranger-looking numbers only exist to counteract List's own hidden indent,
-    /// which doesn't apply here. Using `sidebarRowInsets` on a plain view is exactly
-    /// the "super far left" regression from moving these out of the List — use this
-    /// one instead.
-    static let pinnedActionInsets = EdgeInsets(top: xs, leading: l, bottom: xs, trailing: l)
 
     /// Width of the icon column in New Chat / Scheduled / Plugins.
     static let sidebarIconColumnWidth: CGFloat = 26

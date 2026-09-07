@@ -5,9 +5,9 @@
 //  Provenance: HAND-BUILT
 //  Built from: List(selection:), .confirmationDialog, .listStyle(.sidebar),
 //  .listRowInsets, .selectionDisabled. Row content (icon + text) is a plain HStack
-//  rather than Label — see the note on row(_:systemImage:) for why. New Chat/
-//  Scheduled/Plugins sit outside the List entirely (see pinnedActions) so only
-//  Recents scrolls — they use plain .padding/.frame in place of List's row modifiers.
+//  rather than Label — see the note on row(_:systemImage:) for why. Two separate
+//  Lists, not one: pinnedActions (New Chat/Scheduled/Plugins) is non-scrolling, the
+//  Recents List below it scrolls independently — see the note on pinnedActions.
 
 import SwiftUI
 
@@ -51,7 +51,7 @@ struct SidebarView: View {
                 .frame(width: AppSpacing.sidebarIconColumnWidth, alignment: .leading)
                 .offset(x: -1)                                   // ← icon-only nudge; +right / -left
             Text(title)
-                .font(AppFont.sidebar)                           // ← row text size
+                .sidebarRowTextStyle()   // ← same text style as ConversationRow's title
         }
     }
 
@@ -94,46 +94,43 @@ struct SidebarView: View {
         .padding(.bottom, AppSpacing.s)                     // ← gap below "Max" (above New Chat)
     }
 
-    /// New Chat / Scheduled / Plugins, fixed above the scrolling Recents list — not
-    /// List rows anymore, so `.listRowInsets` becomes plain `.padding`, but with
-    /// `AppSpacing.pinnedActionInsets`, not `sidebarRowInsets` — that value is tuned
-    /// to counteract an indent `.listStyle(.sidebar)` adds for free, which doesn't
-    /// exist outside a List (see the note on `pinnedActionInsets`). `.frame(maxWidth:
-    /// .infinity, alignment: .leading)` + `.contentShape(.rect)` (ConversationRow's
-    /// own pattern) keeps the whole row tappable/hoverable edge-to-edge the way a
-    /// List row was for free.
+    /// New Chat / Scheduled / Plugins — a real `List`, same as Recents, not a plain
+    /// VStack anymore: that was the actual ask ("exact same UI" as a conversation
+    /// row), and it's also what several rounds of hand-tuned `.padding`/spacing on a
+    /// plain view were only ever approximating — `.listRowInsets(sidebarRowInsets)`,
+    /// the native hover highlight, and the row-to-row spacing all come back for free
+    /// by being a List row again, the same way ConversationRow gets them.
     ///
-    /// One thing this can't reproduce: `.listStyle(.sidebar)` gives native List rows
-    /// a subtle hover highlight capsule on macOS even when they're not selectable.
-    /// These three no longer get that — worth a look to see if it's missed, since I
-    /// can't check it live in this environment.
+    /// `.scrollDisabled(true)` + `.fixedSize(vertical: true)` is what keeps this
+    /// List from stretching to fill the sidebar the way List/ScrollView normally
+    /// does — it should hug exactly 3 rows tall and let the Recents List below do
+    /// all the scrolling. Haven't been able to confirm this sizing live in this
+    /// environment; if it stretches or clips, that's the pair to look at.
     private var pinnedActions: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        List {
             Button(action: onNewChat) {
                 row("New Chat", systemImage: "square.and.pencil")
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .contentShape(.rect)
+                    .sidebarRowShape()
             }
             .buttonStyle(.plain)
-            .padding(AppSpacing.pinnedActionInsets)
+            .listRowInsets(AppSpacing.sidebarRowInsets)
 
             // Placeholders: present in the layout, deliberately inert for now.
             row("Scheduled", systemImage: "clock")
                 .foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .contentShape(.rect)
+                .sidebarRowShape()
                 .help("Not built yet")
-                .padding(AppSpacing.pinnedActionInsets)
+                .listRowInsets(AppSpacing.sidebarRowInsets)
             row("Plugins", systemImage: "puzzlepiece.extension")
                 .foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .contentShape(.rect)
+                .sidebarRowShape()
                 .help("Not built yet")
-                .padding(AppSpacing.pinnedActionInsets)
-
-            // Same air the old Section footer gave before Recents started.
-            Color.clear.frame(height: AppSpacing.xxl)
+                .listRowInsets(AppSpacing.sidebarRowInsets)
         }
+        .listStyle(.sidebar)
+        .scrollContentBackground(.hidden)
+        .scrollDisabled(true)
+        .fixedSize(horizontal: false, vertical: true)
     }
 
     var body: some View {
@@ -141,8 +138,8 @@ struct SidebarView: View {
             header
             pinnedActions
 
-            // Only Recents scrolls now — New Chat/Scheduled/Plugins above are plain
-            // views, not part of this List, so they stay put.
+            // A second, independently-scrolling List: only Recents scrolls, since
+            // pinnedActions above is its own non-scrolling List.
             List(selection: $selection) {
                 // A plain row rather than Section's `header:` slot: a header gets
                 // its own system-controlled indent, separate from row insets, so

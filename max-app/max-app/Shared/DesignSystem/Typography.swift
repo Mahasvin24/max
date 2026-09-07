@@ -55,3 +55,38 @@ extension View {
         modifier(MessageTextStyle())
     }
 }
+
+/// Text style shared by every sidebar row's label — New Chat/Scheduled/Plugins'
+/// titles (SidebarView.row) and each conversation title (ConversationRow). One
+/// modifier instead of both places copying the same font/lineLimit/truncationMode by
+/// hand, so they can't quietly drift apart the way they already have once.
+struct SidebarRowTextStyle: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .font(AppFont.sidebar)   // ← explicit: the List's ambient font isn't reliably honored under .listStyle(.sidebar) on macOS
+            .lineLimit(1)
+            .truncationMode(.tail)
+    }
+}
+
+/// Layout shared by every sidebar row — full row width, and the whole row (not just
+/// the visible text/icon) counts as one hit-test/hover target. Used by both List rows
+/// (ConversationRow) and the plain-view rows above them (SidebarView.pinnedActions);
+/// List gives this for free to a bare row, a plain view needs it spelled out.
+struct SidebarRowShape: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(.rect)
+    }
+}
+
+extension View {
+    func sidebarRowTextStyle() -> some View {
+        modifier(SidebarRowTextStyle())
+    }
+
+    func sidebarRowShape() -> some View {
+        modifier(SidebarRowShape())
+    }
+}
