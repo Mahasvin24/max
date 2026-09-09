@@ -22,6 +22,7 @@ rebuilding.
 | OpenAI Apps SDK UI design tokens | MIT | colour values in `Assets.xcassets` |
 | [gluonfield/enchanted](https://github.com/gluonfield/enchanted) | Apache-2.0 | composer, floating icon button |
 | [gonzalezreal/swift-markdown-ui](https://github.com/gonzalezreal/swift-markdown-ui) | MIT | assistant reply Markdown/table rendering |
+| [oxremy/BlinkMore](https://github.com/oxremy/BlinkMore) | MIT | Eye Aspect Ratio (EAR) formula in `Shared/Vision/EARCalculator.swift` |
 
 Attribution and the full Apache-2.0 text live in `THIRD_PARTY/`. Apache-2.0 section
 4(b) requires stating changes, which is what each adapted file's `Changes from the
