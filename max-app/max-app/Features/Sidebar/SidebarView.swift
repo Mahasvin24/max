@@ -6,7 +6,7 @@
 //  Built from: List(selection:), .confirmationDialog, .listStyle(.sidebar),
 //  .listRowInsets, .selectionDisabled. Row content (icon + text) is a plain HStack
 //  rather than Label — see the note on row(_:systemImage:) for why. Two separate
-//  Lists, not one: pinnedActions (New Chat/Scheduled/Plugins) is non-scrolling, the
+//  Lists, not one: pinnedActions (New Chat/Scheduled/Eye Care) is non-scrolling, the
 //  Recents List below it scrolls independently — see the note on pinnedActions.
 
 import SwiftUI
@@ -20,13 +20,14 @@ struct SidebarView: View {
     let conversations: [Conversation]
     @Binding var selection: Int?
     var onNewChat: () -> Void
+    var onEyeCare: () -> Void
     var onDelete: (Conversation) -> Void
 
     /// Set while a delete is awaiting confirmation. One piece of state for the whole
     /// list rather than one per row, so rows can't disagree about what's being deleted.
     @State private var pendingDeletion: Conversation?
 
-    /// New Chat / Scheduled / Plugins row content. `Label` was dropped here: its
+    /// New Chat / Scheduled / Eye Care row content. `Label` was dropped here: its
     /// icon+text size follows the ambient font, and that font isn't reliably honored
     /// under `.listStyle(.sidebar)` on macOS — this puts the size on the Text/Image
     /// directly, so it actually changes when AppFont.sidebar changes.
@@ -94,18 +95,21 @@ struct SidebarView: View {
         .padding(.bottom, AppSpacing.s)                     // ← gap below "Max" (above New Chat)
     }
 
-    /// New Chat / Scheduled / Plugins — a real `List`, same as Recents, not a plain
+    /// New Chat / Scheduled / Eye Care — a real `List`, same as Recents, not a plain
     /// VStack anymore: that was the actual ask ("exact same UI" as a conversation
     /// row), and it's also what several rounds of hand-tuned `.padding`/spacing on a
     /// plain view were only ever approximating — `.listRowInsets(sidebarRowInsets)`,
     /// the native hover highlight, and the row-to-row spacing all come back for free
     /// by being a List row again, the same way ConversationRow gets them.
     ///
-    /// `.scrollDisabled(true)` + `.fixedSize(vertical: true)` is what keeps this
-    /// List from stretching to fill the sidebar the way List/ScrollView normally
-    /// does — it should hug exactly 3 rows tall and let the Recents List below do
-    /// all the scrolling. Haven't been able to confirm this sizing live in this
-    /// environment; if it stretches or clips, that's the pair to look at.
+    /// `.scrollDisabled(true)` + an explicit `.frame(height:)` (AppSpacing.sidebarRowHeight
+    /// × row count) is what keeps this List from stretching to fill the sidebar
+    /// the way List/ScrollView normally does, and lets the Recents List below do
+    /// all the scrolling. This used to rely on `.fixedSize(vertical: true)`
+    /// instead — that collapsed the whole List to zero height (all three rows
+    /// invisible) rather than hugging its content, which is a known rough edge
+    /// of List on macOS not reliably reporting an intrinsic height. The explicit
+    /// height is a deliberate, more direct fix for that, not a style preference.
     private var pinnedActions: some View {
         List {
             Button(action: onNewChat) {
@@ -115,22 +119,26 @@ struct SidebarView: View {
             .buttonStyle(.plain)
             .listRowInsets(AppSpacing.sidebarRowInsets)
 
-            // Placeholders: present in the layout, deliberately inert for now.
+            // Placeholder: present in the layout, deliberately inert for now.
             row("Scheduled", systemImage: "clock")
                 .foregroundStyle(.secondary)
                 .sidebarRowShape()
                 .help("Not built yet")
                 .listRowInsets(AppSpacing.sidebarRowInsets)
-            row("Plugins", systemImage: "puzzlepiece.extension")
-                .foregroundStyle(.secondary)
-                .sidebarRowShape()
-                .help("Not built yet")
-                .listRowInsets(AppSpacing.sidebarRowInsets)
+
+            // Was a third inert placeholder ("Plugins") — repurposed as the
+            // entry point to the Eye Care debug screen.
+            Button(action: onEyeCare) {
+                row("Eye Care", systemImage: "eye")
+                    .sidebarRowShape()
+            }
+            .buttonStyle(.plain)
+            .listRowInsets(AppSpacing.sidebarRowInsets)
         }
         .listStyle(.sidebar)
         .scrollContentBackground(.hidden)
         .scrollDisabled(true)
-        .fixedSize(horizontal: false, vertical: true)
+        .frame(height: AppSpacing.sidebarRowHeight * 3)   // 3 rows: New Chat, Scheduled, Eye Care
     }
 
     var body: some View {
@@ -187,6 +195,7 @@ struct SidebarView: View {
         ],
         selection: $selection,
         onNewChat: {},
+        onEyeCare: {},
         onDelete: { _ in }
     )
     .frame(width: 330, height: 400)

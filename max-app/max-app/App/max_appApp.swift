@@ -9,22 +9,15 @@ import SwiftUI
 
 @main
 struct max_appApp: App {
-    // Hoisted here (not inside the popover content) because the menu bar
-    // icon's systemImage needs to reflect live blink status, and Scene.body's
-    // label closure can't reach into state owned only inside MenuBarExtra's
-    // content closure. Monitoring starts from BlinkTrackerViewModel.init()
-    // itself, not from this Scene's lifecycle — it must keep running whether
-    // or not the popover is open.
-    @State private var blinkTrackerViewModel = BlinkTrackerViewModel()
+    // The menu bar item itself is owned by AppDelegate (NSStatusItem, not
+    // SwiftUI's MenuBarExtra — see AppDelegate.swift for why). This just reads
+    // the shared BlinkTrackerViewModel back out to hand to ContentView, so
+    // EyeCareDebugScreen can pause/resume it around its own capture session.
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(blinkTrackerViewModel: appDelegate.blinkTrackerViewModel)
         }
-
-        MenuBarExtra("Max — Eye Care", systemImage: blinkTrackerViewModel.menuBarIconName) {
-            BlinkTrackerMenuBarScreen(viewModel: blinkTrackerViewModel)
-        }
-        .menuBarExtraStyle(.window)
     }
 }

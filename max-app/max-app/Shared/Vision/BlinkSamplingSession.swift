@@ -75,7 +75,10 @@ nonisolated enum BlinkSamplingSession {
         }
     }
 
-    private static func ensureCameraAccess() async throws {
+    /// Not private: reused by the Eye Care debug screen's continuous
+    /// LiveBlinkFeed, which needs the same permission check without
+    /// duplicating it.
+    static func ensureCameraAccess() async throws {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
         case .authorized:
             return
@@ -148,7 +151,15 @@ nonisolated private final class BurstCapture: NSObject, AVCaptureVideoDataOutput
         // the Vision work downstream of it, which is the more expensive half of
         // "camera always on" per the research behind this feature.
         if let range = device.activeFormat.videoSupportedFrameRateRanges.first {
-            let fps = min(Constants.BlinkTracker.processingFPS, range.maxFrameRate)
+            // Clamp into [minFrameRate, maxFrameRate], not just capped below
+            // maxFrameRate — some cameras' minimum supported rate is *above*
+            // Constants.BlinkTracker.processingFPS (observed: a device whose
+            // only supported range was 15–30fps). Setting activeVideoMinFrameDuration
+            // outside the supported range raises an Objective-C exception, which
+            // Swift's try/catch cannot catch — it crashes the process rather than
+            // failing gracefully, so this must never be allowed to happen instead
+            // of being caught after the fact.
+            let fps = min(max(Constants.BlinkTracker.processingFPS, range.minFrameRate), range.maxFrameRate)
             // Setting these properties without holding the configuration lock
             // can throw at runtime — only proceed if the lock actually succeeded,
             // rather than swallowing the error and mutating unlocked.

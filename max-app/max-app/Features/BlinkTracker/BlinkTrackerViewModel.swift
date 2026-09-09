@@ -85,6 +85,24 @@ final class BlinkTrackerViewModel {
         enabled ? startBreakTimer() : stopBreakTimer()
     }
 
+    // MARK: Coordination with EyeCareDebugScreen's continuous LiveBlinkFeed.
+    //
+    // Only one AVCaptureSession can own the camera at a time — the debug
+    // screen's continuous feed and this view model's duty-cycled one would
+    // otherwise contend for the same device. The debug screen calls these
+    // around its own session's lifetime; they don't touch the @AppStorage
+    // enabled flags, so the popover's toggle state is unaffected and normal
+    // monitoring picks back up exactly where it left off.
+
+    func pauseForLiveDebugSession() {
+        stopMonitoring()
+    }
+
+    func resumeAfterLiveDebugSession() {
+        guard UserDefaults.standard.bool(forKey: Constants.BlinkTracker.blinkEnabledDefaultsKey) else { return }
+        startMonitoring()
+    }
+
     // MARK: Blink-rate monitoring
 
     private func startMonitoring() {

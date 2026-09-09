@@ -52,8 +52,19 @@ enum AppSpacing {
     /// see landing correctly.
     static let sidebarRowInsets = EdgeInsets(top: xs, leading: 4, bottom: xs, trailing: l)   // ← nudge `leading` here (more positive = further right)
 
-    /// Width of the icon column in New Chat / Scheduled / Plugins.
+    /// Width of the icon column in New Chat / Scheduled / Eye Care.
     static let sidebarIconColumnWidth: CGFloat = 26
+
+    /// Height of one row in SidebarView.pinnedActions (New Chat / Scheduled /
+    /// Eye Care). That List sizes itself via an explicit `.frame(height:)` of
+    /// `sidebarRowHeight * row count` rather than `.fixedSize(vertical: true)` —
+    /// `List` on macOS doesn't reliably report a usable intrinsic height for
+    /// `.fixedSize` to hug, and was observed collapsing to zero height (the
+    /// whole row group invisible) instead of hugging its 3 rows. This number is
+    /// a first estimate (14pt row font + `sidebarRowInsets`' 4pt top/bottom),
+    /// not a measured one — nudge it while watching the sidebar #Preview live
+    /// if rows clip or extra empty space shows up below Eye Care.
+    static let sidebarRowHeight: CGFloat = 28
 }
 
 /// Corner radii. Named by role rather than by number.
