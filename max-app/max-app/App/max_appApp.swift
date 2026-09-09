@@ -9,15 +9,15 @@ import SwiftUI
 
 @main
 struct max_appApp: App {
-    // The menu bar item itself is owned by AppDelegate (NSStatusItem, not
-    // SwiftUI's MenuBarExtra — see AppDelegate.swift for why). This just reads
-    // the shared BlinkTrackerViewModel back out to hand to ContentView, so
-    // EyeCareDebugScreen can pause/resume it around its own capture session.
+    // The menu bar item (20-20-20 break reminder) is owned entirely by
+    // AppDelegate — see AppDelegate.swift. Nothing here needs to reach it;
+    // unlike the earlier camera-based blink tracker, the break timer has no
+    // reason to coordinate with anything ContentView owns.
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     var body: some Scene {
         WindowGroup {
-            ContentView(blinkTrackerViewModel: appDelegate.blinkTrackerViewModel)
+            ContentView()
         }
     }
 }

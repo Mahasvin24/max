@@ -6,12 +6,12 @@
 //  Built from: UNUserNotificationCenter — no third-party code.
 //
 //  Thin wrapper over local notifications, shared by anything that needs to post
-//  one (currently BlinkTrackerViewModel, for both the blink warning and the
-//  20-20-20 break reminder) — one namespace per concern, matching APIClient and
-//  Constants rather than each feature calling UNUserNotificationCenter directly.
+//  one (currently BreakTimerViewModel, for the 20-20-20 reminder) — one
+//  namespace per concern, matching APIClient and Constants rather than each
+//  feature calling UNUserNotificationCenter directly.
 //
-//  Gentle nudges only: a local notification, never a full-screen takeover — see
-//  Constants.BlinkTracker and BlinkTrackerViewModel for why.
+//  Gentle nudge only: a local notification, never a full-screen takeover — see
+//  Constants.BreakTimer and BreakTimerViewModel for why.
 //
 
 import UserNotifications
@@ -25,14 +25,6 @@ enum NotificationService {
         guard !authorizationRequested else { return }
         authorizationRequested = true
         _ = try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound])
-    }
-
-    static func postBlinkWarning() {
-        post(
-            identifier: "blink-warning",
-            title: "Blink more",
-            body: "Your blink rate has been low for a while — this can dry out your eyes. A few deliberate blinks help."
-        )
     }
 
     static func postBreakReminder() {
