@@ -24,3 +24,22 @@ this model drops instructions as the prompt grows, and phrase-level bans can lea
 verbatim into replies ("I never recommend buying or selling anything"). So add
 these deliberately and re-run `prompt_tuner.py` after each one rather than
 writing a large safety block in one go.
+
+## macOS app
+- [ ] System Settings > Menu Bar lists **two** "Max" entries: the retired
+      `mahasvin.max-app` (off) and the live `com.mahasvin.max-app`. Cosmetic —
+      macOS prunes stale entries on its own eventually. Don't "fix" it by
+      renaming the bundle ID back; that identifier is the one that was stuck and
+      never rendered an icon. See `max-app/AGENT.md`.
+- [ ] Changing the bundle ID gave the app a fresh sandbox container, so the
+      break-reminder toggle reset to its default once. Nothing to do unless some
+      future setting is worth migrating — the old container is still at
+      `~/Library/Containers/mahasvin.max-app`, and can be deleted once it isn't.
+- [ ] The menu bar panel's `Toggle` and `ProgressView` have no automated visual
+      check: `ImageRenderer` can't rasterize AppKit-backed controls, so the
+      offscreen render covers layout and type but stamps placeholders over those
+      two. They were confirmed by eye. If the panel grows more controls, that
+      gap grows with it.
+- [ ] The menu bar panel has no way to open the main window or quit the app,
+      which most menu bar apps offer. Deliberately left out — the ask was to
+      restyle the existing UI, not add features. Worth a decision, not a bug.

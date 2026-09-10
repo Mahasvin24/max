@@ -26,7 +26,13 @@ struct Constants {
     struct BreakTimer {
         /// 20-20-20 rule: every 20 minutes, a 20-second reminder to look at
         /// something ~20 feet away.
-        static let breakIntervalMinutes: TimeInterval = 20 * 60
+        ///
+        /// Renamed from `breakIntervalMinutes`, which was misleading: the value is
+        /// and always was 1200 *seconds*, and every call site treats it that way
+        /// (`.seconds(...)`, `addingTimeInterval(...)`). The name was the only
+        /// thing claiming minutes. A `TimeInterval` is seconds by definition, so
+        /// no unit suffix is the honest spelling.
+        static let breakInterval: TimeInterval = 20 * 60
         static let breakDurationSeconds: TimeInterval = 20
 
         /// UserDefaults key shared between BreakTimerMenuBarScreen's

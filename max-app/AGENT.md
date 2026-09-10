@@ -100,3 +100,55 @@ SF Symbols are template automatically. Ship vector (PDF/SVG) so it scales, or
 taller than the classic 24pt one. Measured on this machine, the bar is 33pt tall
 and our item's slot is 32×33pt, so a glyph around 18pt sits comfortably inside
 it with padding. Re-measure with `CGWindowListCopyWindowInfo` if it looks off.
+
+## Design system
+
+Tokens live in `Shared/DesignSystem/`: `AppFont` (Typography.swift),
+`AppSpacing` / `AppRadius` (Spacing.swift), plus the `SurfacePanel` and
+`PanelSectionHeader` views. Use them instead of literals.
+
+### SurfacePanel's default radius is a trap
+
+`SurfacePanel` defaults to `cornerRadius: AppRadius.composer`, which is **999**.
+That's deliberate for the composer — SwiftUI clamps a rounded rectangle's radius
+to half its shortest side, so 999 guarantees a capsule at any height. But every
+other caller that omits the radius also gets a stadium.
+
+That is exactly what made the break-timer popover look broken: a 280pt-wide card
+rendering as a giant pill. **Always pass an explicit radius** — use
+`AppRadius.panelCard` for menu bar panel cards.
+
+### The type scale is deliberately larger than macOS defaults
+
+`Typography.swift` uses explicit sizes rather than semantic styles (`.body`)
+because macOS semantics land around 13pt and read small in this UI.
+
+The consequence when borrowing from another app: **take its structure, not its
+numbers.** The menu bar panel is modelled on vorssaint-utils, which runs
+10–11.5pt throughout. Copying those sizes would have fought this app's scale, so
+the panel uses `AppFont.panelSectionHeader` (11) and `AppFont.panelMetric` (22)
+and inherits the rest from `AppFont`.
+
+vorssaint-utils is **GPL-3.0**. Its patterns were borrowed by reading — the
+uppercased kerned section label, the radius-10 bordered card, dividers inside a
+card, mini controls. No code was copied, and none should be. When something is
+modelled on an outside project, name the file it came from in a comment.
+
+### Verifying UI without the screen
+
+Screenshotting the Mac needs a full-screen approval the agent cannot grant
+itself, and the sandboxed shell's `screencapture` fails outright. When the user
+isn't there to approve it, render the real views offscreen rather than guessing.
+
+Compile the actual view sources (strip their `#Preview` blocks) into a throwaway
+`swiftc` binary that drives `ImageRenderer`, and shim the colors: `Color`
+members like `.surfaceElevated` are actool-generated asset symbols that don't
+exist outside the app target, so redefine them from `NSColor(named:bundle:)`
+against the *built* `Max.app`. Stub any view model that starts timers or asks
+for notification permission on init.
+
+**One real limitation: `ImageRenderer` cannot rasterize AppKit-backed controls.**
+`Toggle(.switch)` and a linear `ProgressView` render as yellow "prohibited"
+placeholders. Layout, typography, spacing and both color schemes are trustworthy
+from this method; those controls are not. Say which is which rather than
+implying the whole screen was verified.

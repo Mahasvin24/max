@@ -46,13 +46,13 @@ final class BreakTimerViewModel {
 
     private func startBreakTimer() {
         guard breakTimerTask == nil else { return }
-        nextBreakAt = .now.addingTimeInterval(Constants.BreakTimer.breakIntervalMinutes)
+        nextBreakAt = .now.addingTimeInterval(Constants.BreakTimer.breakInterval)
         breakTimerTask = Task { [weak self] in
             while !Task.isCancelled {
                 guard let self else { return }
-                try? await Task.sleep(for: .seconds(Constants.BreakTimer.breakIntervalMinutes))
+                try? await Task.sleep(for: .seconds(Constants.BreakTimer.breakInterval))
                 guard !Task.isCancelled else { return }
-                self.nextBreakAt = .now.addingTimeInterval(Constants.BreakTimer.breakIntervalMinutes)
+                self.nextBreakAt = .now.addingTimeInterval(Constants.BreakTimer.breakInterval)
                 NotificationService.postBreakReminder()
             }
         }

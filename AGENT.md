@@ -47,3 +47,11 @@ The agent's shell is sandboxed. `screencapture` fails with "could not create
 image from rect", and unprivileged `pkill` fails quietly with exit 0. Neither is
 evidence about the app under test. Use `dangerouslyDisableSandbox` for signals,
 and the computer-use tools for anything that needs to see the screen.
+
+Seeing the screen is a separate thing from running commands. The background
+`app_*` computer-use tools work once the user grants an app, but a full-screen
+screenshot needs its own takeover approval that the agent cannot grant itself —
+and if the user has stepped away, it simply times out. That is not a reason to
+stop, and not a reason to claim something renders correctly without looking:
+render the views offscreen instead. `max-app/AGENT.md` has the recipe and, more
+importantly, the one thing that method cannot check.

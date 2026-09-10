@@ -74,4 +74,9 @@ enum AppRadius {
     /// as a full capsule/pill regardless of how many lines the composer grows to.
     static let composer: CGFloat = 999
     static let bubble: CGFloat = 18
+    /// Cards inside the menu bar panel. Note this must be passed to SurfacePanel
+    /// explicitly — SurfacePanel defaults to `composer` (999), which renders any
+    /// panel as a full capsule. That default is why the break-timer popover used
+    /// to look like a giant pill.
+    static let panelCard: CGFloat = 10
 }

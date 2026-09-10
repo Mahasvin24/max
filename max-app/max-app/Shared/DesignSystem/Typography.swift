@@ -34,6 +34,15 @@ enum AppFont {
     static let toolbarIcon = Font.system(size: 13, weight: .regular) // ← edit here for icon size
     /// Segmented control labels.
     static let segment = Font.system(size: 14, weight: .medium)
+    /// Menu bar panel section labels ("EYE CARE"). Always rendered uppercased and
+    /// kerned — use PanelSectionHeader rather than applying this font by hand.
+    /// Smaller than sidebarSectionHeader on purpose: a 280pt popover needs a
+    /// tighter scale than the main window, but not Vorssaint's 10pt, which reads
+    /// too small against the rest of this app's type.
+    static let panelSectionHeader = Font.system(size: 11, weight: .semibold)
+    /// The live countdown in the menu bar panel. Monospaced digits are applied at
+    /// the call site so the value doesn't jitter as it ticks.
+    static let panelMetric = Font.system(size: 22, weight: .medium)
 }
 
 /// Body text of a chat message.
