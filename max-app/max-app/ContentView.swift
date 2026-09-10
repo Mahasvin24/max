@@ -16,6 +16,8 @@ struct ContentView: View {
     @State private var draft = ""
     @State private var selection: Int?
     @State private var section = "Chat"
+    // TEMPORARY diagnostic — see the .alert below.
+    @State private var showingLaunchAlert = true
 
     var body: some View {
         NavigationSplitView {
@@ -62,6 +64,16 @@ struct ContentView: View {
             // Keep the sidebar highlight in step when the model changes conversation
             // on its own — starting a new chat, or sending the first message.
             selection = viewModel.conversation.isNew ? nil : newValue
+        }
+        // TEMPORARY diagnostic — a plain window alert is a different rendering
+        // path than the menu bar item, so this confirms the app is launching
+        // and rendering *something* at all, isolating whether a missing menu
+        // bar icon is specific to that surface. Remove once resolved either
+        // way. SwiftUI's .alert, not NSAlert — see feedback_prefer_swiftui_over_appkit.
+        .alert("Hello from Max", isPresented: $showingLaunchAlert) {
+            Button("OK") {}
+        } message: {
+            Text("The app launched and this alert rendered. If the menu bar icon still isn't visible, that narrows it down to the menu bar surface specifically.")
         }
     }
 
