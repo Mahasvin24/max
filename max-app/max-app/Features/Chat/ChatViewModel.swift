@@ -1,158 +1,156 @@
-//
-//  ChatViewModel.swift
-//  max-app
-//
-//  Created by Mahasvin Shanmugapriya Manikandan on 7/15/26.
-//
-
 import Foundation
+import Observation
 
+@MainActor
 @Observable
-class ChatViewModel {
-    // data
-    var conversationList: ConversationList = ConversationList()
-    var conversation: Conversation = Conversation()
-    var messages: [MessageResponse] = []
+final class ChatViewModel {
+    typealias MessageStream = (Conversation, String) -> AsyncThrowingStream<APIClient.Chat.StreamEvent, Error>
 
-    // status monitoring
-    enum FetchStatus {
-        case notStarted
-        case fetching
-        case success
-        case failed
-    }
+    private(set) var conversationList = ConversationList()
+    private(set) var conversation: Conversation
+    private(set) var messages: [MessageResponse] = []
+
+    enum FetchStatus { case notStarted, fetching, success, failed }
     private(set) var conversationListStatus: FetchStatus = .notStarted
-
-    /// True while a reply is in flight. The round trip is several seconds, so the
-    /// UI has to say something or it reads as broken.
+    private(set) var isLoadingConversation = false
     private(set) var isSending = false
-
-    /// Last failure, in a form the UI can show. Nil when the last call succeeded.
+    private(set) var isAwaitingResponse = false
     private(set) var lastError: String?
 
-    /// Counts down from 0 to hand out ids for locally-echoed messages that
-    /// don't have a server-assigned one yet. Must be unique per pending
-    /// message, not a fixed sentinel: `messages` is diffed by `id`
-    /// (`MessageResponse: Identifiable`), and two rows sharing one id — e.g.
-    /// two user turns both hardcoded to `-1` — makes SwiftUI's `ForEach`
-    /// lose track of which view belongs to which row, which is what caused
-    /// bubbles to render blank on scroll.
+    @ObservationIgnored private let streamMessage: MessageStream
+    private var conversationRequestID = UUID()
+    private var listRequestID = UUID()
     private var nextLocalID = 0
-    private func makeLocalID() -> Int {
-        nextLocalID -= 1
-        return nextLocalID
+
+    init(conversation: Conversation = Conversation(),
+         streamMessage: @escaping MessageStream = APIClient.Chat.streamMessage) {
+        self.conversation = conversation
+        self.streamMessage = streamMessage
     }
 
-    func dismissError() {
+    func dismissError() { lastError = nil }
+
+    /// Invalidates pending work before clearing the visible conversation.
+    func startNewChat() {
+        conversationRequestID = UUID()
+        conversation = Conversation()
+        messages = []
+        isLoadingConversation = false
+        isSending = false
+        isAwaitingResponse = false
         lastError = nil
     }
 
-    func refresh() async {
-        conversation = Conversation()
-        messages = []
-        await fetchAllConversations()
-    }
-
-    //
-    // API calls. Endpoints/verbs live in APIClient.Chat — this layer only
-    // decides what to do with the result.
-    //
-
     func fetchAllConversations() async {
+        let requestID = UUID()
+        let contextID = conversationRequestID
+        listRequestID = requestID
         conversationListStatus = .fetching
         do {
-            conversationList = try await APIClient.Chat.allConversations()
+            let list = try await APIClient.Chat.allConversations()
+            guard listRequestID == requestID else { return }
+            conversationList = list
             conversationListStatus = .success
+            if let updated = list.conversations.first(where: { $0.id == conversation.id }) {
+                conversation = updated
+            }
         } catch {
+            guard listRequestID == requestID else { return }
             conversationListStatus = .failed
-            lastError = error.localizedDescription
+            if conversationRequestID == contextID { lastError = error.localizedDescription }
         }
     }
 
     func deleteConversation(id: Int) async {
+        let contextID = conversationRequestID
         do {
             try await APIClient.Chat.deleteConversation(conversationId: id)
         } catch {
-            lastError = error.localizedDescription
+            if conversationRequestID == contextID { lastError = error.localizedDescription }
             return
         }
-        if conversation.conversationId == id {
-            conversation = Conversation() // we just deleted what we were looking at
-            messages = []
-        }
-        await fetchAllConversations() // update conversation list
+        if conversation.id == id { startNewChat() }
+        await fetchAllConversations()
     }
 
     func fetchConversation(id: Int) async {
-        let response: [MessageResponse]
+        guard let selected = conversationList.conversations.first(where: { $0.id == id }) else {
+            lastError = "This conversation is no longer available."
+            return
+        }
+        startNewChat()
+        conversation = selected
+        isLoadingConversation = true
+        let requestID = conversationRequestID
+        defer {
+            if conversationRequestID == requestID { isLoadingConversation = false }
+        }
         do {
-            response = try await APIClient.Chat.messages(conversationId: id)
+            let response = try await APIClient.Chat.messages(conversationId: id)
+            guard conversationRequestID == requestID else { return }
+            messages = response
         } catch {
+            guard conversationRequestID == requestID else { return }
             lastError = error.localizedDescription
-            return
         }
-
-        guard let newConvo = conversationList.conversations.first(where: { $0.conversationId == id }) else {
-            lastError = "Conversation \(id) is no longer in the list."
-            return
-        }
-        conversation = newConvo
-        messages = response
     }
 
     func sendMessage(text: String) async {
-        // Echoed locally rather than re-fetched from the server: the user's
-        // turn shows immediately, and the assistant's turn is appended once
-        // its first piece of text actually arrives (until then `isSending`
-        // alone carries the "waiting" state, via ThinkingIndicator).
-        let isNew = conversation.isNew
-        let pendingConversationId = conversation.conversationId
-
+        let outgoing = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !outgoing.isEmpty, !isSending, !isLoadingConversation else { return }
+        let requestID = UUID()
+        conversationRequestID = requestID
+        let pendingConversation = conversation
         isSending = true
+        isAwaitingResponse = true
         lastError = nil
-        defer { isSending = false }
+        defer {
+            if conversationRequestID == requestID {
+                isSending = false
+                isAwaitingResponse = false
+            }
+        }
 
-        messages.append(MessageResponse(
-            conversationId: pendingConversationId, id: makeLocalID(),
-            role: "user", content: text, createdAt: ""
-        ))
-
+        messages.append(localMessage(role: "user", content: outgoing))
         var assistantIndex: Int?
-
         do {
-            for try await event in APIClient.Chat.streamMessage(conversation: conversation, content: text) {
+            for try await event in streamMessage(pendingConversation, outgoing) {
+                // The user can navigate while an old request is still finishing.
+                guard conversationRequestID == requestID, !Task.isCancelled else { return }
                 switch event {
                 case .chunk(let piece):
+                    guard !piece.isEmpty else { continue }
+                    isAwaitingResponse = false
                     if let index = assistantIndex {
                         messages[index].content += piece
                     } else {
-                        isSending = false // swap the "thinking" dots for the growing reply
                         assistantIndex = messages.count
-                        messages.append(MessageResponse(
-                            conversationId: pendingConversationId, id: makeLocalID(),
-                            role: "assistant", content: piece, createdAt: ""
-                        ))
+                        messages.append(localMessage(role: "assistant", content: piece))
                     }
                 case .done(let response):
+                    isAwaitingResponse = false
                     if let index = assistantIndex {
                         messages[index] = response
                     } else {
-                        messages.append(response) // model returned no content at all
+                        messages.append(response)
                     }
-                    // Only known here: the conversation this reply actually landed
-                    // in, with its real (server-assigned) id. Update our copy so a
-                    // second message in the same conversation doesn't ask the
-                    // backend to create *another* new conversation.
-                    if isNew {
+                    if pendingConversation.isNew {
+                        // Keep the server ID even if refreshing the sidebar fails.
+                        conversation = Conversation(conversationId: response.conversationId)
                         await fetchAllConversations()
-                        if let updated = conversationList.conversations.first(where: { $0.conversationId == response.conversationId }) {
-                            conversation = updated
-                        }
                     }
                 }
             }
         } catch {
+            guard conversationRequestID == requestID, !Task.isCancelled else { return }
             lastError = error.localizedDescription
         }
+    }
+
+    private func localMessage(role: String, content: String) -> MessageResponse {
+        // Unique negative IDs distinguish optimistic rows from server rows.
+        nextLocalID -= 1
+        return MessageResponse(conversationId: conversation.id, id: nextLocalID,
+                               role: role, content: content, createdAt: "")
     }
 }

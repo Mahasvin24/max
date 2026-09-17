@@ -3,29 +3,31 @@
 //  max-app
 //
 //  Provenance: HAND-BUILT
-//  Built from: Text, animation — no third-party code.
+//  Built from: LogoSpinner, Text — no third-party code.
+//
 
 import SwiftUI
 
 /// Shown while a reply is in flight. The backend round trip is several seconds,
 /// so the transcript needs to show that something is happening.
+///
+/// The spinning brandmark carries the motion now. The text used to pulse its
+/// opacity as well; that was dropped when the mark arrived, because two competing
+/// animations on one small row reads as busy rather than as alive. Under Reduce
+/// Motion neither animates and the label alone does the work — see LogoSpinner.
 struct ThinkingIndicator: View {
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var dimmed = false
-
     var body: some View {
-        HStack {
+        HStack(spacing: AppSpacing.s) {
+            LogoSpinner(size: 16)
+                .foregroundStyle(Color.textSecondary)
+
             Text("Thinking…")
                 .font(AppFont.message)
-                .foregroundStyle(.secondary)
-                .opacity(dimmed ? 0.45 : 1)
-                .animation(
-                    reduceMotion ? nil : .easeInOut(duration: 0.9).repeatForever(autoreverses: true),
-                    value: dimmed
-                )
+                .foregroundStyle(Color.textSecondary)
+
             Spacer(minLength: 0)
         }
-        .onAppear { dimmed = true }
+        .accessibilityElement(children: .ignore)
         .accessibilityLabel("Waiting for a reply")
     }
 }

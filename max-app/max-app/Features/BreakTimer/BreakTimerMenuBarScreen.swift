@@ -14,11 +14,6 @@
 //  the readout and the control that governs it. Colors and type are this app's own
 //  (SurfacePanel / AppFont), so it reads as Max rather than as a copy.
 //
-//  Note SurfacePanel is given an EXPLICIT radius. Its default is AppRadius.composer
-//  (999), which SwiftUI clamps to half the shortest side — that turned this panel
-//  into a full stadium/pill, which is what made the old popover look broken.
-//
-
 import SwiftUI
 
 struct BreakTimerMenuBarScreen: View {
@@ -55,6 +50,10 @@ struct BreakTimerMenuBarScreen: View {
         }
         .padding(AppSpacing.l)
         .frame(width: 280)
+        // Keep appearance scoped to this popover; timer behavior is independent.
+        .background(Color.surface)
+        .preferredColorScheme(.dark)
+        .tint(Color.accentColor)
         .onChange(of: breakTimerEnabled) { _, newValue in
             viewModel.setBreakTimerEnabled(newValue)
         }

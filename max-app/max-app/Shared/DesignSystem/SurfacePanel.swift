@@ -5,15 +5,10 @@
 //  Provenance: HAND-BUILT
 //  Built from: RoundedRectangle, ShapeStyle — no third-party code.
 //
-//  Replaces the earlier GlassPanel. The look is flat and opaque on purpose: an
-//  elevated surface separated from the background by ~15 hex points and a hairline
-//  border, which is how the reference UI creates depth without translucency.
-//
-
 import SwiftUI
 
 struct SurfacePanel<Content: View>: View {
-    var cornerRadius: CGFloat = AppRadius.composer
+    let cornerRadius: CGFloat
     @ViewBuilder var content: Content
 
     var body: some View {

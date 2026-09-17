@@ -1,40 +1,25 @@
-//
-//  ConversationRow.swift
-//  max-app
-//
-//  Provenance: HAND-BUILT
-//  Built from: Text, .contextMenu, .listRowInsets — no third-party code.
-
+// Provenance: HAND-BUILT. Built from: Button, contextMenu.
 import SwiftUI
 
-/// One row in the Recents list.
 struct ConversationRow: View {
     let conversation: Conversation
+    var isSelected = false
+    var isFocused = false
+    var onSelect: () -> Void
     var onDelete: () -> Void
 
-    /// The backend occasionally stores an empty title, so fall back rather than
-    /// rendering a blank row.
     private var displayTitle: String {
-        let trimmed = conversation.title.trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmed.isEmpty ? "Conversation \(conversation.conversationId)" : trimmed
+        let title = conversation.title.trimmingCharacters(in: .whitespacesAndNewlines)
+        return title.isEmpty ? "Conversation \(conversation.id)" : title
     }
 
     var body: some View {
-        Text(displayTitle)
-            .sidebarRowTextStyle()
-            .sidebarRowShape()
-            .listRowInsets(AppSpacing.sidebarRowInsets)  // ← same left edge as every other sidebar row
+        Button(displayTitle, action: onSelect)
+            .buttonStyle(RowButtonStyle(isSelected: isSelected, isFocused: isFocused))
+            .accessibilityAddTraits(isSelected ? .isSelected : [])
+            .help(displayTitle)
             .contextMenu {
                 Button("Delete", systemImage: "trash", role: .destructive, action: onDelete)
             }
     }
-}
-
-#Preview {
-    List {
-        ConversationRow(conversation: Conversation(conversationId: 1, title: "Centering a div in CSS", createdAt: "", updatedAt: "")) {}
-        ConversationRow(conversation: Conversation(conversationId: 2, title: "", createdAt: "", updatedAt: "")) {}
-    }
-    .listStyle(.sidebar)
-    .frame(width: 240, height: 160)
 }

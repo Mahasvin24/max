@@ -1,18 +1,8 @@
-//
-//  IconButton.swift
-//  max-app
-//
-//  Provenance: HAND-BUILT
-//  Built from: ButtonStyle, EnvironmentValues — no third-party code.
-
+// Provenance: HAND-BUILT. Built from: ButtonStyle, EnvironmentValues.
 import SwiftUI
 
-/// Style for a compact symbol button.
-///
-/// A ButtonStyle rather than a ViewModifier because only a style can react to the
-/// pressed state.
 struct IconButtonStyle: ButtonStyle {
-    var size: CGFloat = 28
+    var size: CGFloat = AppSpacing.iconButtonSize
 
     func makeBody(configuration: Configuration) -> some View {
         IconButtonBody(configuration: configuration, size: size)
@@ -22,16 +12,19 @@ struct IconButtonStyle: ButtonStyle {
         let configuration: Configuration
         let size: CGFloat
         @Environment(\.isEnabled) private var isEnabled
-        @Environment(\.accessibilityReduceMotion) private var reduceMotion
+        @State private var isHovered = false
 
         var body: some View {
             configuration.label
-                .font(.body)
+                .font(AppFont.toolbarIcon)
+                .foregroundStyle(Color.textSecondary)
                 .frame(width: size, height: size)
+                .background(isEnabled && (isHovered || configuration.isPressed)
+                            ? Color.surfaceHover : .clear,
+                            in: .rect(cornerRadius: AppRadius.control))
                 .contentShape(.rect)
-                .opacity(isEnabled ? (configuration.isPressed ? 0.5 : 1) : 0.35)
-                .scaleEffect(configuration.isPressed && !reduceMotion ? 0.92 : 1)
-                .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
+                .opacity(isEnabled ? (configuration.isPressed ? 0.65 : 1) : 0.45)
+                .onHover { isHovered = $0 }
         }
     }
 }

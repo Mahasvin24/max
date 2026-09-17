@@ -24,8 +24,8 @@ import SwiftUI
 extension Theme {
     static let max = Theme()
         .text {
-            ForegroundColor(.primary)
-            FontSize(15) // matches AppFont.message
+            ForegroundColor(.textPrimary)
+            FontSize(AppFont.messageSize)
         }
         .code {
             FontFamilyVariant(.monospaced)
@@ -33,7 +33,8 @@ extension Theme {
             BackgroundColor(.surfaceSecondary)
         }
         .link {
-            ForegroundColor(.accentColor)
+            ForegroundColor(.textPrimary)
+            UnderlineStyle(.single)
         }
         .paragraph { configuration in
             configuration.label
@@ -52,11 +53,7 @@ extension Theme {
                     .padding(AppSpacing.m)
             }
             .background(Color.surfaceElevated)
-            // AppRadius has no "subtle" radius token yet, only .composer (pill) and
-            // .bubble (18) — reusing .bubble here rather than a new magic number; eyeball
-            // this against the #Preview and introduce a smaller named radius if 18pt
-            // reads too round for a code block.
-            .clipShape(RoundedRectangle(cornerRadius: AppRadius.bubble))
+            .clipShape(RoundedRectangle(cornerRadius: AppRadius.panelCard))
             .markdownMargin(top: 0, bottom: AppSpacing.m)
         }
         .listItem { configuration in

@@ -1,90 +1,76 @@
-//
-//  ChatScreen.swift
-//  max-app
-//
-//  Provenance: HAND-BUILT
-//  Built from: Group, .safeAreaInset, .toolbar — no third-party code.
-
+// Provenance: HAND-BUILT. Built from: VStack, FocusState.
 import SwiftUI
 
-/// Container for the chat pane. Along with `ContentView`, one of only two places
-/// that touch `ChatViewModel` — every component below this takes plain values.
 struct ChatScreen: View {
     let viewModel: ChatViewModel
     @Binding var text: String
-
-    private var isEmptyState: Bool {
-        viewModel.conversation.isNew && viewModel.messages.isEmpty
-    }
+    var focusRequest = 0
+    @FocusState private var isComposerFocused: Bool
 
     var body: some View {
-        Group {
-            if isEmptyState {
-                EmptyChatView(text: $text, isSending: viewModel.isSending, onSend: send)
-            } else {
-                MessageListView(messages: viewModel.messages, isSending: viewModel.isSending)
-                    .safeAreaInset(edge: .bottom) {
-                        ComposerView(text: $text, isSending: viewModel.isSending, onSend: send)
-                            .frame(maxWidth: AppSpacing.readableWidth)
-                            .padding(.horizontal, AppSpacing.xl)
-                            .padding(.bottom, AppSpacing.l)
-                    }
-            }
-        }
-        .background(Color.surface)
-        .safeAreaInset(edge: .top) {
+        VStack(spacing: 0) {
             if let message = viewModel.lastError {
                 ErrorBanner(message: message, onDismiss: viewModel.dismissError)
                     .padding(.horizontal, AppSpacing.xl)
-                    .padding(.top, AppSpacing.s)
+                    .padding(.bottom, AppSpacing.s)
             }
+
+            Group {
+                if viewModel.isLoadingConversation {
+                    ProgressView("Loading conversation…")
+                        .font(AppFont.caption)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if viewModel.conversation.isNew && viewModel.messages.isEmpty {
+                    EmptyChatView(showsSuggestions: text.isEmpty) { prompt in
+                        text = prompt
+                        isComposerFocused = true
+                    }
+                } else {
+                    MessageListView(messages: viewModel.messages,
+                                    isAwaitingResponse: viewModel.isAwaitingResponse)
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            ComposerView(text: $text, isSending: viewModel.isSending,
+                         isLoading: viewModel.isLoadingConversation,
+                         isFocused: $isComposerFocused, onSend: send)
+                .frame(maxWidth: AppSpacing.readableWidth)
+                .padding(.horizontal, AppSpacing.xl)
+                .padding(.bottom, AppSpacing.xl)
+                .padding(.top, AppSpacing.s)
         }
-        // No title in the toolbar: the conversation is already named in the sidebar,
-        // and an empty bar is what makes the top strip read as continuous.
-        .navigationTitle("")
-        .toolbar(removing: .title)
+        .background(Color.surface)
+        .onAppear { isComposerFocused = true }
+        .onChange(of: focusRequest) { _, _ in isComposerFocused = true }
     }
 
     private func send() {
         let outgoing = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !outgoing.isEmpty else { return }
+        guard !outgoing.isEmpty, !viewModel.isSending, !viewModel.isLoadingConversation else { return }
         text = ""
         Task { await viewModel.sendMessage(text: outgoing) }
     }
 }
 
-/// Surfaces `APIError` text — including the backend's 404 detail — instead of
-/// letting failures disappear into the console.
 struct ErrorBanner: View {
     let message: String
     var onDismiss: () -> Void
 
     var body: some View {
         HStack(spacing: AppSpacing.s) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundStyle(.orange)
-            Text(message)
-                .font(AppFont.message)
-                .lineLimit(2)
+            Image(systemName: "exclamationmark.triangle")
+                .accessibilityHidden(true)
+            Text(message).font(AppFont.caption).textSelection(.enabled)
             Spacer(minLength: 0)
-            Button(action: onDismiss) {
-                Image(systemName: "xmark")
-            }
-            .buttonStyle(.icon)
-            .accessibilityLabel("Dismiss error")
+            Button("Dismiss error", systemImage: "xmark", action: onDismiss)
+                .labelStyle(.iconOnly).buttonStyle(.icon)
         }
-        .padding(.horizontal, AppSpacing.m)
-        .padding(.vertical, AppSpacing.s)
-        .background(Color.surfaceElevated, in: .rect(cornerRadius: AppRadius.bubble))
-        .overlay(
-            RoundedRectangle(cornerRadius: AppRadius.bubble)
-                .stroke(Color.borderSubtle, lineWidth: 1)
-        )
+        .foregroundStyle(Color.textPrimary)
+        .padding(AppSpacing.m)
+        .background(Color.surfaceElevated, in: .rect(cornerRadius: AppRadius.panelCard))
+        .overlay(RoundedRectangle(cornerRadius: AppRadius.panelCard)
+            .strokeBorder(Color.borderSubtle, lineWidth: 1))
+        .accessibilityElement(children: .contain)
     }
-}
-
-#Preview {
-    ErrorBanner(message: "Request failed with status code 404: Conversation 42 not found.") {}
-        .padding()
-        .frame(width: 560)
 }

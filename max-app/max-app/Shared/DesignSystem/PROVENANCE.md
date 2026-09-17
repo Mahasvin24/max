@@ -19,8 +19,8 @@ rebuilding.
 | Source | License | Used for |
 |---|---|---|
 | Apple SwiftUI | — | all structural components |
-| OpenAI Apps SDK UI design tokens | MIT | colour values in `Assets.xcassets` |
-| [gluonfield/enchanted](https://github.com/gluonfield/enchanted) | Apache-2.0 | composer, floating icon button |
+| OpenAI Apps SDK UI design tokens | MIT | preserved light colour values in `Assets.xcassets` |
+| [gluonfield/enchanted](https://github.com/gluonfield/enchanted) | Apache-2.0 | composer Return/Shift-Return handling |
 | [gonzalezreal/swift-markdown-ui](https://github.com/gonzalezreal/swift-markdown-ui) | MIT | assistant reply Markdown/table rendering |
 
 Attribution and the full Apache-2.0 text live in `THIRD_PARTY/`. Apache-2.0 section
@@ -34,3 +34,6 @@ tracked by Xcode's own Package Dependencies license report instead. It pulls in 
 vendored: [swiftlang/swift-cmark](https://github.com/swiftlang/swift-cmark) (the GFM
 parser, BSD-2-Clause) and [gonzalezreal/NetworkImage](https://github.com/gonzalezreal/NetworkImage)
 (image loading for Markdown images, MIT).
+
+The approved dark palette and increased-contrast variants are Max-specific.
+The current buttons and window layout compose native SwiftUI primitives.

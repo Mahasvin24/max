@@ -1,90 +1,107 @@
-//
-//  ContentView.swift
-//  max-app
-//
-//  Provenance: HAND-BUILT
-//  Built from: NavigationSplitView, .toolbar, ToolbarItem, .task.
-//
-
+// Provenance: HAND-BUILT. Built from: HSplitView, toolbar, focusedSceneValue.
 import SwiftUI
 
-/// App shell. Owns the view model and wires the sidebar to the chat pane.
+/// Window-local state and feature wiring. The break timer lives at app scope.
 struct ContentView: View {
-    /// `@State`, not `let`: with `@Observable`, the view must own the instance so
-    /// it survives re-initialisation of this struct.
     @State private var viewModel = ChatViewModel()
     @State private var draft = ""
-    @State private var selection: Int?
-    @State private var section = "Chat"
-    // TEMPORARY diagnostic — see the .alert below.
-    @State private var showingLaunchAlert = true
+    @State private var sidebarVisible = true
+    @State private var focusRequest = 0
 
     var body: some View {
-        NavigationSplitView {
-            SidebarView(
-                conversations: viewModel.conversationList.conversations,
-                selection: $selection,
-                onNewChat: newChat,
-                onDelete: { conversation in
-                    Task { await viewModel.deleteConversation(id: conversation.conversationId) }
-                }
-            )
-            .navigationSplitViewColumnWidth(min: 270, ideal: 330, max: 450)
-        } detail: {
-            ChatScreen(viewModel: viewModel, text: $draft)
-                .frame(minWidth: 520, minHeight: 400)
-        }
-        .toolbar {
-            // "Max" now lives in the sidebar's own header row, not here.
-            ToolbarItem(placement: .principal) {
-                // Inert for now — no Work mode behind it yet.
-                SegmentedPill(options: ["Chat", "Work"], selection: $section)
+        HSplitView {
+            if sidebarVisible {
+                SidebarView(
+                    conversations: viewModel.conversationList.conversations,
+                    selection: viewModel.conversation.isNew ? nil : viewModel.conversation.id,
+                    status: viewModel.conversationListStatus,
+                    onNewChat: newChat,
+                    onSelect: selectConversation,
+                    onDelete: { conversation in
+                        Task { await viewModel.deleteConversation(id: conversation.id) }
+                    },
+                    onToggleSidebar: toggleSidebar,
+                    onRetry: { Task { await viewModel.fetchAllConversations() } }
+                )
+                .frame(minWidth: AppSpacing.sidebarMinimum,
+                       idealWidth: AppSpacing.sidebarWidth,
+                       maxWidth: AppSpacing.sidebarMaximum)
             }
 
-            ToolbarItem(placement: .primaryAction) {
-                Button {
-                    // Placeholder: settings aren't built yet.
-                } label: {
-                    Image(systemName: "gearshape")
-                        .font(AppFont.toolbarIcon)
-                }
-                .buttonStyle(.plain)
-                .help("Settings — not built yet")
-                .accessibilityLabel("Settings")
+            VStack(spacing: 0) {
+                WorkspaceHeader(sidebarVisible: sidebarVisible, onToggleSidebar: toggleSidebar)
+                ChatScreen(viewModel: viewModel, text: $draft, focusRequest: focusRequest)
             }
-            .sharedBackgroundVisibility(.hidden)
+            .frame(minWidth: 580, maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.surface)
         }
+        .frame(minWidth: AppSpacing.windowMinimumWidth, minHeight: AppSpacing.windowMinimumHeight)
+        .background(Color.surface)
+        .containerBackground(Color.surface, for: .window)
+        .foregroundStyle(Color.textPrimary)
         .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
-        .task { await viewModel.refresh() }
-        .onChange(of: selection) { _, newValue in
-            guard let newValue, newValue != viewModel.conversation.conversationId else { return }
-            Task { await viewModel.fetchConversation(id: newValue) }
-        }
-        .onChange(of: viewModel.conversation.conversationId) { _, newValue in
-            // Keep the sidebar highlight in step when the model changes conversation
-            // on its own — starting a new chat, or sending the first message.
-            selection = viewModel.conversation.isNew ? nil : newValue
-        }
-        // TEMPORARY diagnostic — a plain window alert is a different rendering
-        // path than the menu bar item, so this confirms the app is launching
-        // and rendering *something* at all, isolating whether a missing menu
-        // bar icon is specific to that surface. Remove once resolved either
-        // way. SwiftUI's .alert, not NSAlert — see feedback_prefer_swiftui_over_appkit.
-        .alert("Hello from Max", isPresented: $showingLaunchAlert) {
-            Button("OK") {}
-        } message: {
-            Text("The app launched and this alert rendered. If the menu bar icon still isn't visible, that narrows it down to the menu bar surface specifically.")
-        }
+        .focusedSceneValue(\.newChat, newChat)
+        .focusedSceneValue(\.toggleMaxSidebar, toggleSidebar)
+        .task { await viewModel.fetchAllConversations() }
     }
-
 
     private func newChat() {
-        selection = nil
+        viewModel.startNewChat()
         draft = ""
-        Task { await viewModel.refresh() }
+        focusRequest += 1
     }
+
+    private func selectConversation(_ id: Int) {
+        guard id != viewModel.conversation.id else { return }
+        draft = ""
+        Task { await viewModel.fetchConversation(id: id) }
+    }
+
+    private func toggleSidebar() { sidebarVisible.toggle() }
 }
 
 #Preview {
-    ContentView()
+    ContentView().preferredColorScheme(.dark).frame(width: 1024, height: 670)
+}
+
+struct WorkspaceHeader: View {
+    let sidebarVisible: Bool
+    var onToggleSidebar: () -> Void
+
+    var body: some View {
+        HStack(spacing: AppSpacing.l) {
+            if !sidebarVisible {
+                Button("Show sidebar", systemImage: "sidebar.left", action: onToggleSidebar)
+                    .labelStyle(.iconOnly)
+                    .buttonStyle(.icon)
+                    .help("Show sidebar")
+                Text("Max").font(AppFont.sidebar)
+            }
+            Spacer()
+            HStack(spacing: AppSpacing.xs) {
+                Text("Chat")
+                    .foregroundStyle(Color.textPrimary)
+                    .padding(.horizontal, AppSpacing.m)
+                    .padding(.vertical, AppSpacing.s)
+                    .background(Color.surfaceSelected, in: .rect(cornerRadius: AppRadius.control))
+                    .accessibilityAddTraits(.isSelected)
+                Button("Tools") {}.disabled(true).help("Tools — not available yet")
+                    .padding(.horizontal, AppSpacing.m)
+            }
+            .font(AppFont.segment)
+            .buttonStyle(.plain)
+            .foregroundStyle(Color.textSecondary)
+            .padding(AppSpacing.xs)
+            .background(Color.surfaceSecondary, in: .rect(cornerRadius: AppRadius.row))
+
+            Button("Settings", systemImage: "gearshape") {}
+                .labelStyle(.iconOnly)
+                .buttonStyle(.icon)
+                .disabled(true)
+                .help("Settings — not available yet")
+        }
+        .padding(.horizontal, AppSpacing.xl)
+        .frame(height: 60)
+    }
+
 }

@@ -67,7 +67,7 @@ uses only the alpha channel, drawing the silhouette black on a light menu bar,
 white on a dark one, and inverting it while the popover is open.
 
 - Template (default, recommended): asset catalog > Render As > **Template
-  Image**, then `MenuBarExtra("Max", image: "MenuBarIcon")`. Because only alpha
+  Image**, then `MenuBarExtra("Max", image: "LogoMark")`. Because only alpha
   survives, the source art must be a **flat monochrome silhouette** — gradients,
   multiple colors, and fine interior detail all collapse.
 - Full color: Render As > **Original Image**. This is allowed, but the icon then
@@ -75,10 +75,22 @@ white on a dark one, and inverting it while the popover is open.
   macOS 26's translucent/tinted menu bar. Only worth it for a mark that's
   genuinely recognizable in color.
 
-The shipped icon (`Assets.xcassets/MenuBarIcon.imageset`) is a six-petal mark
-whose hub is a real negative-space cutout, done with an SVG `<mask>`. That's the
-right way to express interior detail here, since template rendering would erase
-any color-based separation.
+The shipped icon (`Assets.xcassets/LogoMark.imageset`) is a six-petal mark whose
+hub is a real negative-space cutout, done with an SVG `<mask>`. That's the right
+way to express interior detail here, since template rendering would erase any
+color-based separation.
+
+It was called `MenuBarIcon` until the app started using the same mark in-app
+(`Shared/DesignSystem/LogoMark.swift`), at which point the name was a lie. It is
+deliberately ONE asset serving both surfaces, not two copies of the artwork —
+being a template image is what lets it be a menu bar glyph and an accent-tinted
+spinner at once. The full-colour blue-gradient version on the white rounded
+square is a separate asset (`Logo.imageset`) and is the app icon.
+
+**The mark has six-fold rotational symmetry**, which matters for animation: every
+60 degrees is a complete visual period, so a "full 360 degree spin" is six
+identical cycles to the eye, and a 40 degree nudge already reads as most of a
+turn. Size rotations against 60, not 360. See `LogoSpinner`.
 
 Two things worth knowing about that asset, both verified rather than assumed:
 
@@ -107,16 +119,18 @@ Tokens live in `Shared/DesignSystem/`: `AppFont` (Typography.swift),
 `AppSpacing` / `AppRadius` (Spacing.swift), plus the `SurfacePanel` and
 `PanelSectionHeader` views. Use them instead of literals.
 
-### SurfacePanel's default radius is a trap
+### Surfaces and window layout
 
-`SurfacePanel` defaults to `cornerRadius: AppRadius.composer`, which is **999**.
-That's deliberate for the composer — SwiftUI clamps a rounded rectangle's radius
-to half its shortest side, so 999 guarantees a capsule at any height. But every
-other caller that omits the radius also gets a stadium.
+`SurfacePanel` requires an explicit radius. Use `AppRadius.composer` (25) for
+the input, `AppRadius.bubble` (18) for messages, and `AppRadius.panelCard` (10)
+for menu bar cards. There is no default capsule radius.
 
-That is exactly what made the break-timer popover look broken: a 280pt-wide card
-rendering as a giant pill. **Always pass an explicit radius** — use
-`AppRadius.panelCard` for menu bar panel cards.
+The main window uses `HSplitView` plus SwiftUI buttons and scroll views so the
+approved opaque palette and row shapes remain predictable. `NavigationSplitView`
+adds system sidebar materials that differ from this design. Keep the native
+window controls and divider; do not add AppKit window wrappers for styling.
+
+See `DESIGN.md` for the color roles, component boundaries, and test command.
 
 ### The type scale is deliberately larger than macOS defaults
 
