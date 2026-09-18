@@ -21,7 +21,7 @@ struct RowButtonStyle: ButtonStyle {
             configuration.label
                 .font(AppFont.sidebar)
                 .labelStyle(.titleAndIcon)
-                .foregroundStyle(isSelected ? Color.textPrimary : Color.textSecondary)
+                .foregroundStyle(isSelected ? Color.textPrimary : Color.sidebarForeground)
                 .lineLimit(1)
                 .frame(maxWidth: .infinity, minHeight: AppSpacing.sidebarRowHeight, alignment: .leading)
                 .padding(.horizontal, AppSpacing.m)
@@ -33,7 +33,7 @@ struct RowButtonStyle: ButtonStyle {
                     }
                 }
                 .contentShape(.rect)
-                .opacity(isEnabled ? 1 : 0.5)
+                .opacity(isEnabled ? 1 : 0.65)
                 .onHover { isHovered = $0 }
         }
 
@@ -43,4 +43,3 @@ struct RowButtonStyle: ButtonStyle {
         }
     }
 }
-

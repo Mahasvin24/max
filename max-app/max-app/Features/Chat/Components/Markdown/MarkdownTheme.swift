@@ -25,10 +25,11 @@ extension Theme {
     static let max = Theme()
         .text {
             ForegroundColor(.textPrimary)
+            FontFamily(.system(AppFont.chatDesign))
             FontSize(AppFont.messageSize)
         }
         .code {
-            FontFamilyVariant(.monospaced)
+            FontFamily(.system(.monospaced))
             FontSize(.em(0.9))
             BackgroundColor(.surfaceSecondary)
         }
@@ -39,7 +40,7 @@ extension Theme {
         .paragraph { configuration in
             configuration.label
                 .fixedSize(horizontal: false, vertical: true)
-                .relativeLineSpacing(.em(0.33)) // ~ MessageTextStyle's .lineSpacing(5) at 15pt
+                .relativeLineSpacing(.em(0.33))
                 .markdownMargin(top: 0, bottom: AppSpacing.m)
         }
         .codeBlock { configuration in
@@ -47,7 +48,7 @@ extension Theme {
                 configuration.label
                     .fixedSize(horizontal: false, vertical: true)
                     .markdownTextStyle {
-                        FontFamilyVariant(.monospaced)
+                        FontFamily(.system(.monospaced))
                         FontSize(.em(0.9))
                     }
                     .padding(AppSpacing.m)

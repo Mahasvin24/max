@@ -9,6 +9,7 @@ final class ChatViewModel {
     private(set) var conversationList = ConversationList()
     private(set) var conversation: Conversation
     private(set) var messages: [MessageResponse] = []
+    private(set) var lastSubmittedMessageID: Int?
 
     enum FetchStatus { case notStarted, fetching, success, failed }
     private(set) var conversationListStatus: FetchStatus = .notStarted
@@ -35,6 +36,7 @@ final class ChatViewModel {
         conversationRequestID = UUID()
         conversation = Conversation()
         messages = []
+        lastSubmittedMessageID = nil
         isLoadingConversation = false
         isSending = false
         isAwaitingResponse = false
@@ -111,7 +113,9 @@ final class ChatViewModel {
             }
         }
 
-        messages.append(localMessage(role: "user", content: outgoing))
+        let userMessage = localMessage(role: "user", content: outgoing)
+        messages.append(userMessage)
+        lastSubmittedMessageID = userMessage.id
         var assistantIndex: Int?
         do {
             for try await event in streamMessage(pendingConversation, outgoing) {

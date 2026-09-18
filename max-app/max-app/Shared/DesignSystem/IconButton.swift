@@ -3,21 +3,23 @@ import SwiftUI
 
 struct IconButtonStyle: ButtonStyle {
     var size: CGFloat = AppSpacing.iconButtonSize
+    var foreground: Color = .textSecondary
 
     func makeBody(configuration: Configuration) -> some View {
-        IconButtonBody(configuration: configuration, size: size)
+        IconButtonBody(configuration: configuration, size: size, foreground: foreground)
     }
 
     private struct IconButtonBody: View {
         let configuration: Configuration
         let size: CGFloat
+        let foreground: Color
         @Environment(\.isEnabled) private var isEnabled
         @State private var isHovered = false
 
         var body: some View {
             configuration.label
                 .font(AppFont.toolbarIcon)
-                .foregroundStyle(Color.textSecondary)
+                .foregroundStyle(foreground)
                 .frame(width: size, height: size)
                 .background(isEnabled && (isHovered || configuration.isPressed)
                             ? Color.surfaceHover : .clear,

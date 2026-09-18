@@ -41,10 +41,6 @@ struct ComposerView: View {
                 HStack(spacing: AppSpacing.m) {
                     Button("Add attachment", systemImage: "plus") {}
                         .disabled(true).help("Attachments — not available yet")
-                    Label("Ask anything", systemImage: "sparkles")
-                        .labelStyle(.titleAndIcon)
-                        .font(AppFont.caption)
-                        .foregroundStyle(Color.textSecondary)
                     Spacer()
                     Button("Voice input", systemImage: "mic") {}
                         .disabled(true).help("Voice input — not available yet")

@@ -21,7 +21,7 @@ struct SidebarView: View {
                 Spacer()
                 Button("Hide sidebar", systemImage: "sidebar.left", action: onToggleSidebar)
                     .labelStyle(.iconOnly)
-                    .buttonStyle(.icon)
+                    .buttonStyle(IconButtonStyle(foreground: .sidebarForeground))
                     .help("Hide sidebar")
             }
             .padding(.horizontal, AppSpacing.xl)
@@ -29,7 +29,7 @@ struct SidebarView: View {
 
             ScrollViewReader { proxy in
                 ScrollView {
-                    LazyVStack(alignment: .leading, spacing: AppSpacing.xs) {
+                    LazyVStack(alignment: .leading, spacing: AppSpacing.sidebarRowGap) {
                         Button(action: onNewChat) {
                             Label("New chat", systemImage: "square.and.pencil")
                         }
@@ -44,10 +44,10 @@ struct SidebarView: View {
 
                         Text("Recents")
                             .font(AppFont.sidebarSectionHeader)
-                            .foregroundStyle(Color.textSecondary)
+                            .foregroundStyle(Color.sidebarForeground)
                             .padding(.horizontal, AppSpacing.m)
-                            .padding(.top, AppSpacing.xl)
-                            .padding(.bottom, AppSpacing.s)
+                            .padding(.top, AppSpacing.l)
+                            .padding(.bottom, AppSpacing.xs)
 
                         ForEach(conversations) { conversation in
                             ConversationRow(
@@ -72,7 +72,7 @@ struct SidebarView: View {
                             } else {
                                 Text("Your chats will appear here.")
                                     .font(AppFont.caption)
-                                    .foregroundStyle(Color.textSecondary)
+                                    .foregroundStyle(Color.sidebarForeground)
                                     .padding(AppSpacing.m)
                             }
                         }

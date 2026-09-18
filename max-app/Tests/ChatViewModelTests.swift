@@ -27,6 +27,7 @@ struct ChatViewModelTests {
         try await eventually { model.isAwaitingResponse }
         #expect(model.isSending)
         #expect(model.messages.first?.content == "Hello")
+        #expect(model.lastSubmittedMessageID == model.messages.first?.id)
         await model.sendMessage(text: "Duplicate while waiting")
         #expect(source.callCount == 1)
 
@@ -96,6 +97,7 @@ struct ChatViewModelTests {
         let task = Task { await model.sendMessage(text: "Old chat") }
         try await eventually { model.isAwaitingResponse }
         model.startNewChat()
+        #expect(model.lastSubmittedMessageID == nil)
         source.continuation.yield(.chunk("Late text"))
         source.continuation.yield(.done(response("Late response")))
         source.continuation.finish()

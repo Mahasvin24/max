@@ -18,15 +18,13 @@ struct ChatScreen: View {
             Group {
                 if viewModel.isLoadingConversation {
                     ProgressView("Loading conversation…")
-                        .font(AppFont.caption)
+                        .font(AppFont.chatCaption)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if viewModel.conversation.isNew && viewModel.messages.isEmpty {
-                    EmptyChatView(showsSuggestions: text.isEmpty) { prompt in
-                        text = prompt
-                        isComposerFocused = true
-                    }
+                    EmptyChatView()
                 } else {
                     MessageListView(messages: viewModel.messages,
+                                    lastSubmittedMessageID: viewModel.lastSubmittedMessageID,
                                     isAwaitingResponse: viewModel.isAwaitingResponse)
                 }
             }
@@ -61,7 +59,7 @@ struct ErrorBanner: View {
         HStack(spacing: AppSpacing.s) {
             Image(systemName: "exclamationmark.triangle")
                 .accessibilityHidden(true)
-            Text(message).font(AppFont.caption).textSelection(.enabled)
+            Text(message).font(AppFont.chatCaption).textSelection(.enabled)
             Spacer(minLength: 0)
             Button("Dismiss error", systemImage: "xmark", action: onDismiss)
                 .labelStyle(.iconOnly).buttonStyle(.icon)

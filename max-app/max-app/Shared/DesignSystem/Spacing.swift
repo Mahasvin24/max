@@ -9,10 +9,11 @@ enum AppSpacing {
     static let xl: CGFloat = 20
     static let xxl: CGFloat = 32
     static let readableWidth: CGFloat = 720
-    static let sidebarWidth: CGFloat = 220
+    static let sidebarWidth: CGFloat = 294
     static let sidebarMinimum: CGFloat = 200
-    static let sidebarMaximum: CGFloat = 260
-    static let sidebarRowHeight: CGFloat = 40
+    static let sidebarMaximum: CGFloat = 294
+    static let sidebarRowHeight: CGFloat = 34
+    static let sidebarRowGap: CGFloat = 2
     static let iconButtonSize: CGFloat = 28
     static let windowMinimumWidth: CGFloat = 900
     static let windowMinimumHeight: CGFloat = 640
