@@ -11,7 +11,7 @@ router = APIRouter()
 """ List of all conversation ids """
 @router.get("/conversations", response_model=ConversationList)
 def fetch_conversation_history():
-    conversations = db.conversations.get_all_conversations()
+    conversations = db.conversations.list_all()
     return {
         "conversations": conversations,
         "count": len(conversations)
@@ -20,13 +20,13 @@ def fetch_conversation_history():
 """ Delete a conversation """
 @router.delete("/conversations")
 def delete_conversation(conversation_id: int):
-    db.conversations.delete_conversation(conversation_id)
+    db.conversations.delete(conversation_id)
     return {"status": "ok"}
 
 """ Get sequences of messages for a conversation """
 @router.get("/messages")
 def get_messages_for_conversation(conversation_id: int):
-    return db.messages.get_messages_for_id(conversation_id)
+    return db.messages.list_for_conversation(conversation_id)
 
 """ Send a message and get agent response. """
 @router.post("/messages")
@@ -34,20 +34,20 @@ def message_agent(message: Message):
     # Create new conversation conversation_id == -1
     is_new = message.conversation.conversation_id == -1
     if is_new:
-        convo = db.conversations.create_conversation(message.content)
+        convo = db.conversations.create(message.content)
         message.conversation = Conversation(**convo)
 
     conv_id = message.conversation.conversation_id
 
     # Invalid conversation id case
-    if not db.conversations.converation_exists(conv_id):
+    if not db.conversations.exists(conv_id):
         raise HTTPException(status_code=404, detail=f"Conversation {conv_id} not found.")
 
     # add user message to table
-    db.insert_message(conv_id, "user", message.content)
+    db.messages.create(conv_id, "user", message.content)
 
     # agent response
-    messages = db.get_messages_for_id(conv_id)
+    messages = db.messages.list_for_conversation(conv_id)
 
     def stream(messages):
         pieces = []
@@ -60,13 +60,13 @@ def message_agent(message: Message):
 
         # add agent message to table
         content = "".join(pieces)
-        obj = db.insert_message(conv_id, "assistant", content)
+        obj = db.messages.create(conv_id, "assistant", content)
 
         # create title for new conversations
         if is_new:
-            messages = db.get_messages_for_id(conv_id)
+            messages = db.messages.list_for_conversation(conv_id)
             title = agent.create_title(messages=messages)
-            db.update_conversation_title(conv_id, title)
+            db.conversations.update_title(conv_id, title)
             print(f"New title: {title}") # DEBUG
 
         # final return with metadata
