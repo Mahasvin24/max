@@ -3,7 +3,7 @@ from fastapi.responses import StreamingResponse
 import time
 
 import agent
-import database as db
+import backend.database.database as db
 from schemas import Conversation, ConversationList, Message, MessageResponse
 
 router = APIRouter()

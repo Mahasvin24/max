@@ -22,7 +22,6 @@ def _connection():
     finally:
         conn.close()
 
-
 """ current time """
 def _get_time():
     return datetime.now().isoformat()
