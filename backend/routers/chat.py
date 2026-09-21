@@ -3,7 +3,7 @@ from fastapi.responses import StreamingResponse
 import time
 
 import agent
-import backend.database.database as db
+import database as db
 from schemas import Conversation, ConversationList, Message, MessageResponse
 
 router = APIRouter()
@@ -11,7 +11,7 @@ router = APIRouter()
 """ List of all conversation ids """
 @router.get("/conversations", response_model=ConversationList)
 def fetch_conversation_history():
-    conversations = db.get_all_conversations()
+    conversations = db.conversations.get_all_conversations()
     return {
         "conversations": conversations,
         "count": len(conversations)
@@ -20,13 +20,13 @@ def fetch_conversation_history():
 """ Delete a conversation """
 @router.delete("/conversations")
 def delete_conversation(conversation_id: int):
-    db.delete_conversation(conversation_id)
+    db.conversations.delete_conversation(conversation_id)
     return {"status": "ok"}
 
 """ Get sequences of messages for a conversation """
 @router.get("/messages")
 def get_messages_for_conversation(conversation_id: int):
-    return db.get_messages_for_id(conversation_id)
+    return db.messages.get_messages_for_id(conversation_id)
 
 """ Send a message and get agent response. """
 @router.post("/messages")
@@ -34,13 +34,13 @@ def message_agent(message: Message):
     # Create new conversation conversation_id == -1
     is_new = message.conversation.conversation_id == -1
     if is_new:
-        convo = db.create_conversation(message.content)
+        convo = db.conversations.create_conversation(message.content)
         message.conversation = Conversation(**convo)
 
     conv_id = message.conversation.conversation_id
 
     # Invalid conversation id case
-    if not db.converation_exists(conv_id):
+    if not db.conversations.converation_exists(conv_id):
         raise HTTPException(status_code=404, detail=f"Conversation {conv_id} not found.")
 
     # add user message to table

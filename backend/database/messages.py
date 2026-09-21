@@ -1,6 +1,6 @@
 from typing import Any
 
-from helpers import _connection, _get_time
+from .helpers import _connection, _get_time
 
 """ Table Schema """
 def _create_messages_table(conn):
@@ -17,7 +17,7 @@ def _create_messages_table(conn):
     """)
 
 """ CREATE """
-def insert_message(conversation_id: int, role: str, content: str) -> dict[str, Any]:
+def create(conversation_id: int, role: str, content: str) -> dict[str, Any]:
     with _connection() as conn:
         cursor = conn.cursor()
         time = _get_time()
@@ -42,9 +42,8 @@ def insert_message(conversation_id: int, role: str, content: str) -> dict[str, A
             "created_at": time
         }
 
-
 """ READ """
-def get_messages_for_id(conversation_id: int) -> list[dict[str, str]]:
+def list_for_conversation(conversation_id: int) -> list[dict[str, Any]]:
     with _connection() as conn:
         cursor = conn.cursor()
         cursor.execute(

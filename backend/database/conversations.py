@@ -1,6 +1,6 @@
 from typing import Any
 
-from helpers import _connection, _get_time
+from .helpers import _connection, _get_time
 
 """ Table Schema """
 def _create_conversations_table(conn):
@@ -15,7 +15,7 @@ def _create_conversations_table(conn):
     """)
 
 """ CREATE """
-def create_conversation(title: str) -> int:
+def create(title: str) -> dict[str, Any]:
     with _connection() as conn:
         cursor = conn.cursor()
         time = _get_time()
@@ -32,7 +32,7 @@ def create_conversation(title: str) -> int:
         }
 
 """ READ """
-def get_all_conversations() -> list[dict[str, Any]]:
+def list_all() -> list[dict[str, Any]]:
     with _connection() as conn:
         cursor = conn.cursor()
         cursor.execute(
@@ -51,7 +51,7 @@ def get_all_conversations() -> list[dict[str, Any]]:
         } for row in rows]
 
 """ DELETE """
-def delete_conversation(conversation_id: int):
+def delete(conversation_id: int):
     with _connection() as conn:
         cursor = conn.cursor()
         cursor.execute(
@@ -60,7 +60,7 @@ def delete_conversation(conversation_id: int):
         )
 
 """ UPDATE """
-def update_conversation_title(id: int, title: str):
+def update_title(conversation_id: int, title: str):
     with _connection() as conn:
         cursor = conn.cursor()
         cursor.execute(
@@ -69,11 +69,11 @@ def update_conversation_title(id: int, title: str):
             SET title = ?
             WHERE id = ?
             """,
-            (title, id)
+            (title, conversation_id)
         )
 
 """ Helper """
-def converation_exists(id: int) -> bool:
+def exists(conversation_id: int) -> bool:
     with _connection() as conn:
         cursor = conn.cursor()
         cursor.execute("""
@@ -82,6 +82,6 @@ def converation_exists(id: int) -> bool:
                 FROM conversations
                 WHERE id = ?
             );
-        """, (id,))
+        """, (conversation_id,))
         row = cursor.fetchone()
         return bool(row[0])

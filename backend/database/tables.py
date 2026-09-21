@@ -1,6 +1,6 @@
-from helpers import _connection
-from conversations import _create_conversations_table
-from messages import _create_messages_table
+from .helpers import _connection
+from .conversations import _create_conversations_table
+from .messages import _create_messages_table
 
 """ create tables """
 def create_tables() -> bool:
@@ -18,7 +18,6 @@ def drop_tables() -> bool:
         cursor.execute("""DROP TABLE IF EXISTS messages""")
         cursor.execute("""DROP TABLE IF EXISTS conversations""")
     return True
-
 
 """ when run: clear db """
 if __name__ == "__main__":

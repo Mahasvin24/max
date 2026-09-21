@@ -1,2 +1,1 @@
-import database.conversations
-import database.messages
+from . import conversations, messages, tables
