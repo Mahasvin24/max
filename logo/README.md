@@ -49,7 +49,8 @@ bounding square's side. The SwiftUI shape remains centered in non-square frames.
 
 ## Rebuilding
 
-After editing `vortex.js`, regenerate the checked-in SVG and SwiftUI source:
+After editing `vortex.js`, regenerate the checked-in SVG and SwiftUI source,
+including their copies in the app:
 
 ```sh
 node logo/build.cjs
@@ -61,7 +62,27 @@ Check that exports match their source without rewriting them:
 node logo/build.cjs --check
 ```
 
-The standalone SVG, SwiftUI file, and browser preview all use the same geometry.
+The standalone SVG, SwiftUI file, menu-bar asset, in-app mark, and browser preview
+all use the same geometry. The app's `LogoMark` wrapper draws `MaxVortex` directly;
+`MenuBarExtra` uses the generated 18 pt template SVG.
+
+To rebuild the opaque app-icon fallback PNGs and light/dark logo images:
+
+```sh
+swiftc logo/MaxVortex.swift logo/render-app-icons.swift -o /tmp/max-render-app-icons
+/tmp/max-render-app-icons max-app/max-app/Assets.xcassets
+```
+
+The native app icon lives in `max-app/max-app/AppIcon.icon`. Its SVG is generated
+by `build.cjs`; `icon.json` defines a white background with a black vortex for
+Default appearance and a charcoal (#181818) background with an off-white (#E9E9E9) vortex for Dark.
+The vortex layer uses a 0.76 scale. Let macOS apply the outer icon mask:
+do not bake rounded corners or transparent outer padding into the artwork.
+That double treatment caused a small inset tile with a thick surrounding frame.
+
+The SwiftUI renderer creates full-bleed opaque PNG fallbacks in
+`AppIcon.appiconset` and matching light/dark `Logo.imageset` images using the
+same vortex scale. The standalone mark keeps its tighter 91–95% bounds.
 The original reference JPEG remains in this folder for provenance; it is not
 loaded by the preview or included in the exported logo.
 
@@ -72,3 +93,19 @@ The outline was checked at 16–1024 px for centering, filling at least 90% of e
 dimension, and staying inside its frame. A non-square frame and 101 collapse
 states were checked as well. Exact Bézier extrema confirm the 48-unit maximum
 radius, so continuous rotation cannot clip the mark.
+
+### Running Dock icon appearance
+
+macOS can keep the Default app icon even when system Dark mode is enabled,
+because icon style is a separate preference. `AppIconDelegate` observes the
+application's effective appearance and sets its Dock icon at launch and on
+changes. `DockIconLight` and `DockIconDark` are native masked exports from
+`AppIcon.icon`, regenerated with:
+
+```sh
+sh logo/render-dock-icons.sh
+```
+
+These runtime images include the native outer mask because AppKit displays them
+directly. Keep the source icon background full-bleed. Finder and the icon shown
+while the app is not running still follow macOS's icon-style preference.

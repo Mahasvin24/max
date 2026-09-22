@@ -58,7 +58,7 @@ struct ComposerView: View {
         Button(action: onSend) {
             Group {
                 if isSending {
-                    ProgressView().controlSize(.small).tint(Color.textSecondary)
+                    LogoSpinner(size: 16)
                 } else {
                     Image(systemName: "arrow.up").font(.system(size: 14, weight: .semibold))
                 }

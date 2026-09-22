@@ -3,19 +3,9 @@
 //  max-app
 //
 //  Provenance: HAND-BUILT
-//  Built from: Image, KeyframeAnimator — no third-party code.
-//
-//  The Max brandmark: the six-petal flower with the hexagonal hub, on a
-//  transparent ground. This is the SAME asset the menu bar uses
-//  (Assets.xcassets/LogoMark.imageset) rather than a second copy of the artwork —
-//  it was called MenuBarIcon until the app started using it too, at which point
-//  that name was a lie. One shape, tinted per context.
-//
-//  Note the asset is a TEMPLATE image, so it takes the surrounding
-//  `foregroundStyle` and has no colour of its own. That's what makes it usable
-//  both as a black/white menu bar glyph and as an accent-tinted spinner here. The
-//  full-colour, blue-gradient version on the white rounded square is a different
-//  asset (Logo.imageset) and is the app icon, not this.
+//  Built from: MaxVortex Shape, KeyframeAnimator — no third-party code.
+//  The in-app shape and menu bar template SVG are generated from the same
+//  approved geometry in logo/vortex.js by logo/build.cjs.
 //
 
 import SwiftUI
@@ -23,11 +13,11 @@ import SwiftUI
 /// The brandmark at a given size. Tint it with `.foregroundStyle`.
 struct LogoMark: View {
     var size: CGFloat = 16
+    var collapse: CGFloat = 0
 
     var body: some View {
-        Image(.logoMark)
-            .resizable()
-            .scaledToFit()
+        MaxVortex(collapse: collapse)
+            .fill(.foreground)
             .frame(width: size, height: size)
             .accessibilityHidden(true)
     }

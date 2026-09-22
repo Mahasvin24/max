@@ -54,6 +54,18 @@ semibold wordmark.
 Menu bar sizes remain separate. Surface radii must be explicit:
 25 pt composer, 18 pt message bubbles, 11 pt rows, 10 pt popover cards.
 
+## Identity
+
+The approved vortex is used in the sidebar wordmark, welcome artwork, menu bar,
+and indeterminate chat/loading states. `LogoMark` wraps the native `MaxVortex`
+shape and inherits the surrounding foreground style; `LogoSpinner` respects
+Reduce Motion. The timer's determinate progress bar continues to show elapsed
+progress. The native app icon uses a black vortex on a full white background
+in Default appearance and a off-white (#E9E9E9) vortex on charcoal (#181818) in Dark. macOS supplies its
+outer mask; the artwork has no pre-rounded inset tile or transparent margin.
+
+Geometry and regeneration commands live in [`../logo/README.md`](../logo/README.md).
+
 ## Interaction
 
 - Command-Shift-N starts a chat in the focused window; Command-N retains the

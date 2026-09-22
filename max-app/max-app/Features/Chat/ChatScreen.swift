@@ -17,9 +17,14 @@ struct ChatScreen: View {
 
             Group {
                 if viewModel.isLoadingConversation {
-                    ProgressView("Loading conversation…")
-                        .font(AppFont.chatCaption)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    VStack(spacing: AppSpacing.m) {
+                        LogoSpinner(size: 24)
+                        Text("Loading conversation…")
+                    }
+                    .foregroundStyle(Color.textSecondary)
+                    .font(AppFont.chatCaption)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .accessibilityElement(children: .combine)
                 } else if viewModel.conversation.isNew && viewModel.messages.isEmpty {
                     EmptyChatView()
                 } else {

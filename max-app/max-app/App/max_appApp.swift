@@ -9,6 +9,8 @@ import SwiftUI
 
 @main
 struct max_appApp: App {
+    @NSApplicationDelegateAdaptor(AppIconDelegate.self) private var appIconDelegate
+
     // One app-owned timer survives opening and closing the popover.
     @State private var breakTimerViewModel = BreakTimerViewModel()
 

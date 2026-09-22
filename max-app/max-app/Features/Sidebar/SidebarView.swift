@@ -16,7 +16,8 @@ struct SidebarView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack {
+            HStack(spacing: AppSpacing.m) {
+                LogoMark(size: 24)
                 Text(Constants.maxString).font(AppFont.sidebarHeader)
                 Spacer()
                 Button("Hide sidebar", systemImage: "sidebar.left", action: onToggleSidebar)
@@ -63,7 +64,12 @@ struct SidebarView: View {
 
                         if conversations.isEmpty {
                             if status == .fetching {
-                                ProgressView().controlSize(.small).padding(AppSpacing.m)
+                                HStack {
+                                    LogoSpinner(size: 16)
+                                }
+                                .padding(AppSpacing.m)
+                                .accessibilityElement(children: .ignore)
+                                .accessibilityLabel("Loading conversations")
                             } else if status == .failed {
                                 Button("Retry loading chats", action: onRetry)
                                     .font(AppFont.caption)
