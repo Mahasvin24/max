@@ -2,7 +2,7 @@
 
 ## Ownership
 
-- `backend/` is Max's to write. Review it, point at problems, suggest diffs in
+- `backend/` is Mahasvin's to write. Review it, point at problems, suggest diffs in
   chat — but don't edit the files.
 - `max-app/` is yours to write directly.
 
