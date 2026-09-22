@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Max Logo Lab</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div>
+      <p class="eyebrow">Max identity system</p>
+      <h1>Logo Lab</h1>
+    </div>
+    <div class="header-actions">
+      <span class="save-state" id="save-state" aria-live="polite">Saved locally</span>
+      <button class="button button-quiet" id="reset-button" type="button">Reset</button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <aside class="controls" aria-label="Logo controls">
+      <section class="control-section">
+        <div class="section-heading">
+          <h2>Geometry</h2>
+          <span>100 × 100 vector</span>
+        </div>
+
+        <label class="range-control">
+          <span><span>Blades</span><output for="blades" id="blades-value"></output></span>
+          <input id="blades" type="range" min="3" max="9" step="1">
+        </label>
+        <label class="range-control">
+          <span><span>Line length</span><output for="lineLength" id="lineLength-value"></output></span>
+          <input id="lineLength" type="range" min="14" max="44" step="0.5">
+        </label>
+        <label class="range-control">
+          <span><span>Distance from center</span><output for="centerDistance" id="centerDistance-value"></output></span>
+          <input id="centerDistance" type="range" min="14" max="34" step="0.5">
+        </label>
+        <label class="range-control">
+          <span><span>Curvature</span><output for="curvature" id="curvature-value"></output></span>
+          <input id="curvature" type="range" min="0" max="150" step="1">
+        </label>
+        <label class="range-control">
+          <span><span>Inner taper</span><output for="innerTaper" id="innerTaper-value"></output></span>
+          <input id="innerTaper" type="range" min="0" max="85" step="1">
+        </label>
+        <label class="range-control">
+          <span><span>Thickness</span><output for="thickness" id="thickness-value"></output></span>
+          <input id="thickness" type="range" min="3" max="16" step="0.5">
+        </label>
+        <label class="range-control">
+          <span><span>Rotation</span><output for="rotation" id="rotation-value"></output></span>
+          <input id="rotation" type="range" min="-36" max="36" step="1">
+        </label>
+      </section>
+
+      <section class="control-section">
+        <div class="section-heading">
+          <h2>Appearance</h2>
+          <span>Editable, not final</span>
+        </div>
+        <div class="color-grid">
+          <label><span>Light ink</span><input id="lightInk" type="color"></label>
+          <label><span>Light field</span><input id="lightBg" type="color"></label>
+          <label><span>Dark ink</span><input id="darkInk" type="color"></label>
+          <label><span>Dark field</span><input id="darkBg" type="color"></label>
+        </div>
+      </section>
+
+      <section class="control-section">
+        <div class="section-heading">
+          <h2>Motion study</h2>
+          <span>Preview only</span>
+        </div>
+        <div class="segmented" id="motion-control" aria-label="Motion preview">
+          <button type="button" data-motion="still">Still</button>
+          <button type="button" data-motion="spin">Spin</button>
+          <button type="button" data-motion="breathe">Breathe</button>
+          <button type="button" data-motion="ripple">Ripple</button>
+        </div>
+      </section>
+    </aside>
+
+    <section class="studio">
+      <div class="stage-toolbar">
+        <div class="segmented" id="surface-control" aria-label="Preview surface">
+          <button type="button" data-surface="transparent">Mark</button>
+          <button type="button" data-surface="light">Light</button>
+          <button type="button" data-surface="dark">Dark</button>
+        </div>
+        <span id="geometry-readout" class="geometry-readout"></span>
+      </div>
+
+      <div class="stage" id="stage">
+        <div class="hero-mark" id="hero-mark" aria-label="Max logo preview"></div>
+      </div>
+
+      <div class="theme-comparison">
+        <article class="theme-card" id="light-card">
+          <span>Light</span>
+          <div class="comparison-mark" data-logo-preview></div>
+        </article>
+        <article class="theme-card" id="dark-card">
+          <span>Dark</span>
+          <div class="comparison-mark" data-logo-preview></div>
+        </article>
+      </div>
+
+      <section class="size-proof" aria-labelledby="size-proof-title">
+        <div class="section-heading">
+          <h2 id="size-proof-title">Optical size proof</h2>
+          <span>Same vector, actual CSS pixels</span>
+        </div>
+        <div class="size-row" id="size-row"></div>
+      </section>
+
+      <section class="export-panel" aria-labelledby="export-title">
+        <div class="section-heading">
+          <h2 id="export-title">Export</h2>
+          <span>SVG is the master asset</span>
+        </div>
+        <div class="export-settings">
+          <label>
+            <span>Asset</span>
+            <select id="asset-style">
+              <option value="mark">Transparent mark</option>
+              <option value="lightTile">Light app-icon tile</option>
+              <option value="darkTile">Dark app-icon tile</option>
+            </select>
+          </label>
+          <label>
+            <span>PNG size</span>
+            <select id="png-size">
+              <option>16</option>
+              <option>32</option>
+              <option>64</option>
+              <option>128</option>
+              <option>256</option>
+              <option>512</option>
+              <option selected>1024</option>
+            </select>
+          </label>
+        </div>
+        <div class="export-actions">
+          <button class="button button-primary" id="download-svg" type="button">Download SVG</button>
+          <button class="button" id="download-png" type="button">Download PNG</button>
+          <button class="button" id="copy-svg" type="button">Copy SVG</button>
+          <button class="button" id="download-swift" type="button">Download SwiftUI</button>
+          <button class="button" id="copy-config" type="button">Copy settings</button>
+        </div>
+        <p class="export-note">PNG exports are rendered from the SVG in your browser. The SwiftUI file redraws the same Bézier geometry with <code>Canvas</code>, so it stays resolution-independent and animation-ready.</p>
+      </section>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>

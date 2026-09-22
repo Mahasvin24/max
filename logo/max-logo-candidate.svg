@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 100 100">
+  <title>Max six-blade pinwheel candidate</title>
+  <defs>
+    <path id="blade" d="M 37.724 36.836 A 23.043 23.043 0 0 1 62.744 15.086"/>
+  </defs>
+  <g fill="none" stroke="#000000" stroke-width="9.5" stroke-linecap="round" stroke-linejoin="round">
+    <use href="#blade" transform="rotate(0 50 50)"/>
+    <use href="#blade" transform="rotate(60 50 50)"/>
+    <use href="#blade" transform="rotate(120 50 50)"/>
+    <use href="#blade" transform="rotate(180 50 50)"/>
+    <use href="#blade" transform="rotate(240 50 50)"/>
+    <use href="#blade" transform="rotate(300 50 50)"/>
+  </g>
+</svg>
