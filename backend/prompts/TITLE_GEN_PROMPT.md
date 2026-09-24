@@ -3,4 +3,4 @@ Generate a short title for the following conversation based on the exchanges of 
 Reply with ONLY the title. No quotes, no punctuation at the end, no preamble
 like "Title:", no explanation. Do not answer the message itself.
 
-2 to 4 words. Plain text. No emojis.
+1 to 3 words. Plain text. No emojis. Generic Title.

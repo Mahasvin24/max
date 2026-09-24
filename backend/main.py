@@ -1,5 +1,9 @@
 from fastapi import FastAPI
 from routers import chat
+import database
+
+# Setup
+database.tables.create_tables()
 
 app = FastAPI()
 

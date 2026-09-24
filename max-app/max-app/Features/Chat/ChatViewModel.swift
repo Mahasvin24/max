@@ -5,6 +5,8 @@ import Observation
 @Observable
 final class ChatViewModel {
     typealias MessageStream = (Conversation, String) -> AsyncThrowingStream<APIClient.Chat.StreamEvent, Error>
+    typealias ConversationListLoader = () async throws -> ConversationList
+    typealias MessageLoader = (Int) async throws -> [MessageResponse]
 
     private(set) var conversationList = ConversationList()
     private(set) var conversation: Conversation
@@ -19,13 +21,19 @@ final class ChatViewModel {
     private(set) var lastError: String?
 
     @ObservationIgnored private let streamMessage: MessageStream
+    @ObservationIgnored private let loadConversationList: ConversationListLoader
+    @ObservationIgnored private let loadMessages: MessageLoader
     private var conversationRequestID = UUID()
     private var listRequestID = UUID()
     private var nextLocalID = 0
 
     init(conversation: Conversation = Conversation(),
+         loadConversationList: @escaping ConversationListLoader = APIClient.Chat.allConversations,
+         loadMessages: @escaping MessageLoader = APIClient.Chat.messages(conversationId:),
          streamMessage: @escaping MessageStream = APIClient.Chat.streamMessage) {
         self.conversation = conversation
+        self.loadConversationList = loadConversationList
+        self.loadMessages = loadMessages
         self.streamMessage = streamMessage
     }
 
@@ -49,7 +57,7 @@ final class ChatViewModel {
         listRequestID = requestID
         conversationListStatus = .fetching
         do {
-            let list = try await APIClient.Chat.allConversations()
+            let list = try await loadConversationList()
             guard listRequestID == requestID else { return }
             conversationList = list
             conversationListStatus = .success
@@ -88,7 +96,7 @@ final class ChatViewModel {
             if conversationRequestID == requestID { isLoadingConversation = false }
         }
         do {
-            let response = try await APIClient.Chat.messages(conversationId: id)
+            let response = try await loadMessages(id)
             guard conversationRequestID == requestID else { return }
             messages = response
         } catch {
@@ -117,11 +125,27 @@ final class ChatViewModel {
         messages.append(userMessage)
         lastSubmittedMessageID = userMessage.id
         var assistantIndex: Int?
+        var loadedSelectedHistory = false
         do {
             for try await event in streamMessage(pendingConversation, outgoing) {
                 // The user can navigate while an old request is still finishing.
                 guard conversationRequestID == requestID, !Task.isCancelled else { return }
                 switch event {
+                case .conversation(let conversationID):
+                    guard pendingConversation.isNew else { continue }
+                    conversation = Conversation(conversationId: conversationID)
+                    do {
+                        let history = try await loadMessages(conversationID)
+                        guard conversationRequestID == requestID, !Task.isCancelled else { return }
+                        messages = history
+                        lastSubmittedMessageID = history.last(where: \.isFromUser)?.id
+                        assistantIndex = nil
+                        loadedSelectedHistory = true
+                    } catch {
+                        guard conversationRequestID == requestID, !Task.isCancelled else { return }
+                        lastError = error.localizedDescription
+                    }
+                    await fetchAllConversations()
                 case .chunk(let piece):
                     guard !piece.isEmpty else { continue }
                     isAwaitingResponse = false
@@ -139,9 +163,17 @@ final class ChatViewModel {
                         messages.append(response)
                     }
                     if pendingConversation.isNew {
-                        // Keep the server ID even if refreshing the sidebar fails.
-                        conversation = Conversation(conversationId: response.conversationId)
+                        // Older servers may not send the early conversation event.
+                        if conversation.isNew {
+                            conversation = Conversation(conversationId: response.conversationId)
+                        }
                         await fetchAllConversations()
+                        if !loadedSelectedHistory {
+                            let history = try await loadMessages(response.conversationId)
+                            guard conversationRequestID == requestID, !Task.isCancelled else { return }
+                            messages = history
+                            lastSubmittedMessageID = history.last(where: \.isFromUser)?.id
+                        }
                     }
                 }
             }

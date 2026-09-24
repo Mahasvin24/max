@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
+import json
 import time
 
 import agent
@@ -57,6 +58,11 @@ def message_agent(message: Message):
     messages = db.messages.list_for_conversation(conv_id)
 
     def stream(messages):
+        yield sse_format(
+            data=json.dumps({"conversation_id": conv_id}),
+            event="conversation",
+        )
+        
         pieces = []
         for chunk in agent.llm.message(messages=messages):
             # stream
@@ -74,7 +80,6 @@ def message_agent(message: Message):
             messages = db.messages.list_for_conversation(conv_id)
             title = agent.llm.create_title(messages=messages)
             db.conversations.update_title(conv_id, title)
-            print(f"New title: {title}") # DEBUG
 
         # final return with metadata
         yield sse_format(data=MessageResponse(**obj).model_dump_json(), event="done")

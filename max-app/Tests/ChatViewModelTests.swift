@@ -5,10 +5,10 @@ import Testing
 @MainActor
 struct ChatViewModelTests {
     private func model(_ source: TestStream) -> ChatViewModel {
-        ChatViewModel(conversation: Conversation(conversationId: 42, title: "Test")) { _, _ in
+        ChatViewModel(conversation: Conversation(conversationId: 42, title: "Test"), streamMessage: { _, _ in
             source.callCount += 1
             return source.stream
-        }
+        })
     }
 
     @Test func emptyMessagesDoNotStartRequests() async {
@@ -62,6 +62,46 @@ struct ChatViewModelTests {
         #expect(!model.isSending)
     }
 
+    @Test func routedNewChatLoadsSelectedConversationHistory() async throws {
+        let source = TestStream()
+        let conversation = Conversation(conversationId: 42, title: "Existing conversation")
+        let historyBeforeResponse = [
+            MessageResponse(conversationId: 42, id: 1, role: "user", content: "Earlier question", createdAt: ""),
+            MessageResponse(conversationId: 42, id: 2, role: "assistant", content: "Earlier answer", createdAt: ""),
+            MessageResponse(conversationId: 42, id: 3, role: "user", content: "Follow-up", createdAt: "")
+        ]
+        var loadedConversationID: Int?
+        let model = ChatViewModel(
+            loadConversationList: { ConversationList(conversations: [conversation], count: 1) },
+            loadMessages: { id in
+                loadedConversationID = id
+                return historyBeforeResponse
+            },
+            streamMessage: { _, _ in source.stream }
+        )
+
+        let task = Task { await model.sendMessage(text: "Follow-up") }
+        try await eventually { model.isAwaitingResponse }
+        source.continuation.yield(.conversation(42))
+        try await eventually { model.messages.map(\.id) == [1, 2, 3] }
+        #expect(model.conversation == conversation)
+        #expect(model.isAwaitingResponse)
+        source.continuation.yield(.chunk("Current answer"))
+        source.continuation.yield(.done(
+            MessageResponse(conversationId: 42, id: 4, role: "assistant",
+                            content: "Current answer", createdAt: "")
+        ))
+        source.continuation.finish()
+        await task.value
+
+        #expect(loadedConversationID == 42)
+        #expect(model.conversation == conversation)
+        #expect(model.messages.map(\.id) == [1, 2, 3, 4])
+        #expect(model.messages.map(\.content) ==
+                ["Earlier question", "Earlier answer", "Follow-up", "Current answer"])
+        #expect(model.lastSubmittedMessageID == 3)
+    }
+
     @Test func failurePreservesPartialReplyAndUnlocksComposer() async throws {
         let source = TestStream()
         let model = model(source)
@@ -112,10 +152,10 @@ struct ChatViewModelTests {
         let old = TestStream()
         let current = TestStream()
         var calls = 0
-        let model = ChatViewModel(conversation: Conversation(conversationId: 42)) { _, _ in
+        let model = ChatViewModel(conversation: Conversation(conversationId: 42), streamMessage: { _, _ in
             calls += 1
             return calls == 1 ? old.stream : current.stream
-        }
+        })
         let oldTask = Task { await model.sendMessage(text: "Old") }
         try await eventually { model.isAwaitingResponse }
         model.startNewChat()

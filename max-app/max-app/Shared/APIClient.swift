@@ -65,21 +65,25 @@ nonisolated struct APIClient {
         }
 
         /// One item out of the server's streamed reply to `POST /messages`:
-        /// either another slice of assistant text, or the final saved
-        /// message once the full reply — and the db row it was written to —
-        /// are known.
+        /// the selected conversation, another slice of assistant text, or the
+        /// final saved message once the full reply is known.
         enum StreamEvent {
+            case conversation(Int)
             case chunk(String)
             case done(MessageResponse)
+        }
+
+        private struct ConversationSelection: Decodable {
+            var conversationId: Int
         }
 
         /// `POST /messages`, streamed — the agent's reply arrives piece by
         /// piece over Server-Sent Events instead of as one JSON body.
         ///
-        /// Pass `Conversation()` (id `-1`) to start a new conversation; the
-        /// backend creates it and titles it for you. The `.done` event's
-        /// `conversationId` reflects the row actually written, which is the
-        /// only place a caller learns the id for a conversation that was new.
+        /// Pass `Conversation()` (id `-1`) to let the backend route the message
+        /// into an existing conversation or create and title a new one. The
+        /// A `conversation` event identifies the selected row before text starts
+        /// streaming. The `.done` event repeats that ID for compatibility.
         ///
         /// Throws `APIError.requestFailed(statusCode: 404, ...)` if the
         /// conversation no longer exists.
@@ -118,7 +122,7 @@ nonisolated struct APIClient {
                         }
 
                         try await parseSSE(bytes) { name, payload in
-                            guard name == "done" else {
+                            guard name == "conversation" || name == "done" else {
                                 continuation.yield(.chunk(payload))
                                 return
                             }
@@ -128,7 +132,12 @@ nonisolated struct APIClient {
                             let decoder = JSONDecoder()
                             decoder.keyDecodingStrategy = .convertFromSnakeCase
                             do {
-                                continuation.yield(.done(try decoder.decode(MessageResponse.self, from: data)))
+                                if name == "conversation" {
+                                    let selection = try decoder.decode(ConversationSelection.self, from: data)
+                                    continuation.yield(.conversation(selection.conversationId))
+                                } else {
+                                    continuation.yield(.done(try decoder.decode(MessageResponse.self, from: data)))
+                                }
                             } catch {
                                 throw APIError.decodingFailed(underlyingError: error)
                             }

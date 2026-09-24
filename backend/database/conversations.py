@@ -86,7 +86,6 @@ def exists(conversation_id: int) -> bool:
         row = cursor.fetchone()
         return bool(row[0])
 
-
 def fetch_conversation_previews() -> dict[str, str]:
     # conn = _connection()
     # cursor = conn.cursor()
@@ -95,6 +94,6 @@ def fetch_conversation_previews() -> dict[str, str]:
 
     res = {}
     for convo in rows:
-        res[convo["conversation_id"]] = f"Conversation Title: {convo["title"]}"
+        res[convo["conversation_id"]] = f"{convo["title"]}"
 
     return res

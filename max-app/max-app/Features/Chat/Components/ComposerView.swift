@@ -24,7 +24,7 @@ struct ComposerView: View {
                     .textFieldStyle(.plain)
                     .font(AppFont.message)
                     .foregroundStyle(Color.textPrimary)
-                    .lineLimit(2...6)
+                    .lineLimit(1...6)
                     .focused(isFocused)
                     .accessibilityLabel("Message Max")
                     .onSubmit {

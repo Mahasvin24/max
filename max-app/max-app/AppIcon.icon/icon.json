@@ -2,7 +2,7 @@
   "fill-specializations": [
     {
       "value": {
-        "solid": "srgb:1.00000,1.00000,1.00000,1.00000"
+        "solid": "srgb:0.09411765,0.09411765,0.09411765,1.00000"
       }
     },
     {
@@ -21,8 +21,8 @@
           "image-name": "vortex.svg",
           "fill-specializations": [
             {
-              "value": {
-                "solid": "srgb:0.00000,0.00000,0.00000,1.00000"
+            "value": {
+              "solid": "srgb:0.91372549,0.91372549,0.91372549,1.00000"
               }
             },
             {
