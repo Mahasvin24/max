@@ -33,6 +33,7 @@ def get_messages_for_conversation(conversation_id: int):
 def message_agent(message: Message):
     # Create new conversation conversation_id == -1
     is_new = message.conversation.conversation_id == -1
+
     if is_new:
         convo = db.conversations.create(message.content)
         message.conversation = Conversation(**convo)
@@ -51,7 +52,7 @@ def message_agent(message: Message):
 
     def stream(messages):
         pieces = []
-        for chunk in agent.message(messages=messages):
+        for chunk in agent.llm.message(messages=messages):
             # stream
             piece = chunk.choices[0].delta.content
             if piece:
@@ -65,7 +66,7 @@ def message_agent(message: Message):
         # create title for new conversations
         if is_new:
             messages = db.messages.list_for_conversation(conv_id)
-            title = agent.create_title(messages=messages)
+            title = agent.llm.create_title(messages=messages)
             db.conversations.update_title(conv_id, title)
             print(f"New title: {title}") # DEBUG
 
