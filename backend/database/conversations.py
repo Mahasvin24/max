@@ -72,7 +72,7 @@ def update_title(conversation_id: int, title: str):
             (title, conversation_id)
         )
 
-""" Helper """
+""" Helpers """
 def exists(conversation_id: int) -> bool:
     with _connection() as conn:
         cursor = conn.cursor()
@@ -85,3 +85,16 @@ def exists(conversation_id: int) -> bool:
         """, (conversation_id,))
         row = cursor.fetchone()
         return bool(row[0])
+
+
+def fetch_conversation_previews() -> dict[str, str]:
+    # conn = _connection()
+    # cursor = conn.cursor()
+
+    rows = list_all()
+
+    res = {}
+    for convo in rows:
+        res[convo["conversation_id"]] = f"Conversation Title: {convo["title"]}"
+
+    return res

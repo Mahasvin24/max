@@ -9,8 +9,6 @@ collapse-to-dot motion, and actual-size samples on light and dark backgrounds.
 
 - [`max-vortex.svg`](max-vortex.svg): transparent, scalable master. Uses
   `currentColor` (black by default); inline it to inherit a surrounding text color.
-- [`MaxVortex.swift`](MaxVortex.swift): native SwiftUI `Shape` with the same curves.
-  Fits and centers itself in the largest square inside any supplied rectangle.
 - [`vortex.js`](vortex.js): the single source of geometry for both exports and the
   browser preview. No libraries or network requests are needed.
 
@@ -49,8 +47,8 @@ bounding square's side. The SwiftUI shape remains centered in non-square frames.
 
 ## Rebuilding
 
-After editing `vortex.js`, regenerate the checked-in SVG and SwiftUI source,
-including their copies in the app:
+After editing `vortex.js`, regenerate the checked-in SVG and the app's SwiftUI
+source:
 
 ```sh
 node logo/build.cjs
@@ -62,16 +60,9 @@ Check that exports match their source without rewriting them:
 node logo/build.cjs --check
 ```
 
-The standalone SVG, SwiftUI file, menu-bar asset, in-app mark, and browser preview
-all use the same geometry. The app's `LogoMark` wrapper draws `MaxVortex` directly;
+The standalone SVG, app SwiftUI source, menu-bar asset, and browser preview all use
+the same geometry. The app's `LogoMark` wrapper draws `MaxVortex` directly;
 `MenuBarExtra` uses the generated 18 pt template SVG.
-
-To rebuild the opaque app-icon fallback PNGs and light/dark logo images:
-
-```sh
-swiftc logo/MaxVortex.swift logo/render-app-icons.swift -o /tmp/max-render-app-icons
-/tmp/max-render-app-icons max-app/max-app/Assets.xcassets
-```
 
 The native app icon lives in `max-app/max-app/AppIcon.icon`. Its SVG is generated
 by `build.cjs`; `icon.json` defines a white background with a black vortex for

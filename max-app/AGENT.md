@@ -79,8 +79,8 @@ The shipped mark is the approved six-arm vortex. Its rounded, tapered arms and
 open center are generated from the single geometry source in `logo/vortex.js`:
 
 - `node logo/build.cjs` generates the menu-bar SVG in
-  `Assets.xcassets/LogoMark.imageset`, the native `MaxVortex` shape in
-  `Shared/DesignSystem`, and the portable copies in `logo/`.
+  `Assets.xcassets/LogoMark.imageset` and the native `MaxVortex` shape in
+  `Shared/DesignSystem`.
 - `LogoMark` draws that native shape in-app, so it inherits `foregroundStyle`
   and supports a `collapse` parameter. `LogoSpinner` uses the same wrapper.
 - `AppIcon.icon` is the native adaptive app icon: black vortex on white in
@@ -92,8 +92,7 @@ open center are generated from the single geometry source in `logo/vortex.js`:
   Regenerate its masked `DockIconLight/Dark` assets with
   `sh logo/render-dock-icons.sh`. Keep the menu-bar template path unchanged.
 - `Logo.imageset` has matching light/dark images; `AppIcon.appiconset` contains
-  opaque light fallback PNGs. Rebuild with `logo/render-app-icons.swift`; commands
-  are in `logo/README.md`. Never bake transparent margins or rounded inset tiles
+  opaque light fallback PNGs. Never bake transparent margins or rounded inset tiles
   into app-icon backgrounds: that caused the thick white frame in the Dock.
   Do not reintroduce the old blue flower.
 

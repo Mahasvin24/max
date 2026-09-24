@@ -81,7 +81,6 @@ ${geometry.points.map(p => `        ${point(p)},`).join("\n")}
 `;
 for (const [name, source] of [
   ["max-vortex.svg", `<?xml version="1.0" encoding="UTF-8"?>\n${geometry.svg()}\n`],
-  ["MaxVortex.swift", swift],
   ["../max-app/max-app/Shared/DesignSystem/MaxVortex.swift", swift],
   ["../max-app/max-app/AppIcon.icon/Assets/vortex.svg",
     `<?xml version="1.0" encoding="UTF-8"?>\n${geometry.svg({ color: "#000000" })}\n`],
