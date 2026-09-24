@@ -32,13 +32,19 @@ def get_messages_for_conversation(conversation_id: int):
 @router.post("/messages")
 def message_agent(message: Message):
     # Create new conversation conversation_id == -1
-    is_new = message.conversation.conversation_id == -1
+    conv_id = message.conversation.conversation_id
+    is_new = conv_id == -1
 
+    # Route conversations
     if is_new:
+        conv_id = agent.system_one.route_to_conversation(message.content)
+        is_new = conv_id == -1
+
+    # Create new ID for truly new conversations
+    if conv_id == -1:
         convo = db.conversations.create(message.content)
         message.conversation = Conversation(**convo)
-
-    conv_id = message.conversation.conversation_id
+        conv_id = message.conversation.conversation_id
 
     # Invalid conversation id case
     if not db.conversations.exists(conv_id):
@@ -76,7 +82,7 @@ def message_agent(message: Message):
     return StreamingResponse(stream(messages), media_type="text/event-stream")
 
 """
------  Helper  -----
+-----  Helper(s)  -----
 """
 
 def sse_format(data: str = "", event: str | None = None):
