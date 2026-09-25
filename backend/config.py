@@ -14,7 +14,7 @@ LAYA_DIR = BASE_DIR / "models" / "laya"
 
 
 # Prompts
-with open(PROMPTS_DIR / "SYSTEM_PROMPT.md", "r") as f:
+with open(PROMPTS_DIR / "system_prompt.md", "r") as f:
     SYSTEM_PROMPT = f.read()
-with open(PROMPTS_DIR / "TITLE_GEN_PROMPT.md", "r") as f:
+with open(PROMPTS_DIR / "title_gen_prompt.md", "r") as f:
     TITLE_GEN_PROMPT = f.read()
