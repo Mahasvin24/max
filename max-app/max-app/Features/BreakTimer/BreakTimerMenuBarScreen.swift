@@ -28,7 +28,10 @@ struct BreakTimerMenuBarScreen: View {
 
             SurfacePanel(cornerRadius: AppRadius.panelCard) {
                 VStack(alignment: .leading, spacing: AppSpacing.m) {
-                    BreakTimerRow(nextBreakAt: viewModel.nextBreakAt)
+                    BreakTimerRow(
+                        nextBreakAt: viewModel.nextBreakAt,
+                        isPausedForInactivity: viewModel.isPausedForInactivity
+                    )
 
                     Divider()
 
@@ -36,6 +39,14 @@ struct BreakTimerMenuBarScreen: View {
                         .toggleStyle(.switch)
                         .controlSize(.small)
                         .font(AppFont.caption)
+
+                    // Button("Set time to 20s remaining") {
+                    //     viewModel.setRemainingTimeForTesting()
+                    // }
+                    // .buttonStyle(.bordered)
+                    // .controlSize(.small)
+                    // .font(AppFont.caption)
+                    // .disabled(!breakTimerEnabled)
                 }
                 .padding(AppSpacing.m)
             }

@@ -22,6 +22,7 @@ import SwiftUI
 struct BreakTimerRow: View {
     /// `nil` means the break timer is off.
     let nextBreakAt: Date?
+    let isPausedForInactivity: Bool
 
     private let iconColumnWidth: CGFloat = 22
 
@@ -49,10 +50,12 @@ struct BreakTimerRow: View {
         // .periodic re-renders this subtree once a second; `context.date` is the
         // tick's own timestamp, so it stays correct if a tick is delivered late.
         TimelineView(.periodic(from: .now, by: 1)) { context in
-            let remaining = max(0, nextBreakAt.timeIntervalSince(context.date))
+            let remaining = isPausedForInactivity
+                ? Constants.BreakTimer.breakInterval
+                : max(0, nextBreakAt.timeIntervalSince(context.date))
 
             VStack(alignment: .leading, spacing: AppSpacing.xs) {
-                Text("Next break")
+                Text(isPausedForInactivity ? "Waiting for activity" : "Next break")
                     .font(AppFont.caption)
                     .foregroundStyle(.secondary)
 
@@ -70,7 +73,7 @@ struct BreakTimerRow: View {
                     .tint(.accentColor)
             }
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel("Next break")
+            .accessibilityLabel(isPausedForInactivity ? "Waiting for activity" : "Next break")
             .accessibilityValue(Self.accessibilityText(remaining))
         }
     }
@@ -116,13 +119,25 @@ struct BreakTimerRow: View {
 }
 
 #Preview("Running") {
-    BreakTimerRow(nextBreakAt: .now.addingTimeInterval(19 * 60 + 32))
+    BreakTimerRow(
+        nextBreakAt: .now.addingTimeInterval(19 * 60 + 32),
+        isPausedForInactivity: false
+    )
+        .padding()
+        .frame(width: 260)
+}
+
+#Preview("Paused") {
+    BreakTimerRow(
+        nextBreakAt: .now.addingTimeInterval(Constants.BreakTimer.breakInterval),
+        isPausedForInactivity: true
+    )
         .padding()
         .frame(width: 260)
 }
 
 #Preview("Off") {
-    BreakTimerRow(nextBreakAt: nil)
+    BreakTimerRow(nextBreakAt: nil, isPausedForInactivity: false)
         .padding()
         .frame(width: 260)
 }

@@ -12,11 +12,13 @@
 //
 
 import AppKit
+import CoreGraphics
 import Foundation
 
 @Observable
 final class BreakTimerViewModel {
     private(set) var nextBreakAt: Date?
+    private(set) var isPausedForInactivity = false
 
     private var breakTimerTask: Task<Void, Never>?
     private var lifecycleObserverTokens: [NSObjectProtocol] = []
@@ -44,16 +46,23 @@ final class BreakTimerViewModel {
         enabled ? startBreakTimer() : stopBreakTimer()
     }
 
+    /// Shortens the current interval without bypassing the normal timer and
+    /// notification path, making the complete reminder flow easy to verify.
+    func setRemainingTimeForTesting() {
+        guard breakTimerTask != nil else { return }
+        isPausedForInactivity = false
+        nextBreakAt = Date.now.addingTimeInterval(20)
+    }
+
     private func startBreakTimer() {
         guard breakTimerTask == nil else { return }
-        nextBreakAt = .now.addingTimeInterval(Constants.BreakTimer.breakInterval)
+        resumeTimer(at: .now)
         breakTimerTask = Task { [weak self] in
             while !Task.isCancelled {
-                guard let self else { return }
-                try? await Task.sleep(for: .seconds(Constants.BreakTimer.breakInterval))
+                try? await Task.sleep(for: .seconds(Constants.BreakTimer.activityCheckInterval))
                 guard !Task.isCancelled else { return }
-                self.nextBreakAt = .now.addingTimeInterval(Constants.BreakTimer.breakInterval)
-                NotificationService.postBreakReminder()
+                guard let self else { return }
+                self.updateTimer(at: .now)
             }
         }
     }
@@ -62,25 +71,72 @@ final class BreakTimerViewModel {
         breakTimerTask?.cancel()
         breakTimerTask = nil
         nextBreakAt = nil
+        isPausedForInactivity = false
     }
 
-    // MARK: Sleep/wake — pause rather than keep reminding on a sleeping/locked Mac.
+    private func updateTimer(at now: Date) {
+        let idleDuration = CGEventSource.secondsSinceLastEventType(
+            .combinedSessionState,
+            // kCGAnyInputEventType is a C macro and isn't imported into Swift.
+            // Core Graphics defines it as all bits set in CGEventType's UInt32.
+            eventType: CGEventType(rawValue: UInt32.max)!
+        )
+
+        if idleDuration >= Constants.BreakTimer.idleThreshold {
+            pauseForInactivity(at: now)
+            return
+        }
+
+        if isPausedForInactivity {
+            resumeTimer(at: now)
+            return
+        }
+
+        guard let nextBreakAt, now >= nextBreakAt else { return }
+        NotificationService.postBreakReminder()
+        resumeTimer(at: now)
+    }
+
+    private func pauseForInactivity(at now: Date) {
+        isPausedForInactivity = true
+        // Keep the UI at 20:00 instead of letting wall-clock time elapse while
+        // the person is away. A fresh interval starts after their next input.
+        nextBreakAt = now.addingTimeInterval(Constants.BreakTimer.breakInterval)
+    }
+
+    private func resumeTimer(at now: Date) {
+        isPausedForInactivity = false
+        nextBreakAt = now.addingTimeInterval(Constants.BreakTimer.breakInterval)
+    }
+
+    // MARK: Sleep, screen, and login-session lifecycle
 
     private func registerLifecycleObservers() {
         let center = NSWorkspace.shared.notificationCenter
         lifecycleObserverTokens = [
             center.addObserver(forName: NSWorkspace.willSleepNotification, object: nil, queue: .main) { [weak self] _ in
-                Task { @MainActor in self?.stopBreakTimer() }
+                Task { @MainActor in self?.pauseIfEnabled() }
             },
             center.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { [weak self] _ in
-                Task { @MainActor in self?.resumeAfterWake() }
+                Task { @MainActor in self?.pauseIfEnabled() }
+            },
+            center.addObserver(forName: NSWorkspace.screensDidSleepNotification, object: nil, queue: .main) { [weak self] _ in
+                Task { @MainActor in self?.pauseIfEnabled() }
+            },
+            center.addObserver(forName: NSWorkspace.screensDidWakeNotification, object: nil, queue: .main) { [weak self] _ in
+                Task { @MainActor in self?.pauseIfEnabled() }
+            },
+            center.addObserver(forName: NSWorkspace.sessionDidResignActiveNotification, object: nil, queue: .main) { [weak self] _ in
+                Task { @MainActor in self?.pauseIfEnabled() }
+            },
+            center.addObserver(forName: NSWorkspace.sessionDidBecomeActiveNotification, object: nil, queue: .main) { [weak self] _ in
+                Task { @MainActor in self?.pauseIfEnabled() }
             },
         ]
     }
 
-    private func resumeAfterWake() {
-        if UserDefaults.standard.bool(forKey: Constants.BreakTimer.enabledDefaultsKey) {
-            startBreakTimer()
-        }
+    private func pauseIfEnabled() {
+        guard UserDefaults.standard.bool(forKey: Constants.BreakTimer.enabledDefaultsKey) else { return }
+        pauseForInactivity(at: .now)
     }
 }

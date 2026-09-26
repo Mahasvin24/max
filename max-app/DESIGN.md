@@ -12,8 +12,7 @@ and keep controls and copy purposeful.
   draft, sidebar visibility, and focus request.
 - `HSplitView` owns native resizing. Sidebar rows are native buttons with one
   shared `RowButtonStyle`; selection, hover, focus, and disabled states are explicit.
-  The sidebar starts at 294 pt, about 13% wider than its former 260 pt native split
-  width, and can be narrowed to 200 pt.
+  The sidebar starts at 230 pt and can be resized from 200 to 294 pt.
 - `ChatScreen` keeps one composer alive while its content switches between the
   empty state, loading, and transcript. Small components receive values and actions.
 - `ChatViewModel` owns request state. Sending remains busy through stream completion;

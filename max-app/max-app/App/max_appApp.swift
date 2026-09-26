@@ -20,7 +20,7 @@ struct max_appApp: App {
                 .preferredColorScheme(.dark)
                 .tint(Color.accentColor)
         }
-        .defaultSize(width: 1024, height: 670)
+        .defaultSize(width: 1536, height: 864)
         .windowToolbarStyle(.unifiedCompact(showsTitle: false))
         .commands { MaxCommands() }
 

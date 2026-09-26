@@ -35,6 +35,12 @@ struct Constants {
         static let breakInterval: TimeInterval = 20 * 60
         static let breakDurationSeconds: TimeInterval = 20
 
+        /// Treat a minute without keyboard, mouse, or tablet input as time away
+        /// from the Mac. While away, the next interval stays at a full 20
+        /// minutes and begins only after input resumes.
+        static let idleThreshold: TimeInterval = 60
+        static let activityCheckInterval: TimeInterval = 1
+
         /// UserDefaults key shared between BreakTimerMenuBarScreen's
         /// @AppStorage-backed Toggle and BreakTimerViewModel's own reads at
         /// startup.

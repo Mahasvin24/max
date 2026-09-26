@@ -1,4 +1,5 @@
 // Provenance: HAND-BUILT. Built from: HSplitView, toolbar, focusedSceneValue.
+import AppKit
 import SwiftUI
 
 /// Window-local state and feature wiring. The break timer lives at app scope.
@@ -26,6 +27,7 @@ struct ContentView: View {
                 .frame(minWidth: AppSpacing.sidebarMinimum,
                        idealWidth: AppSpacing.sidebarWidth,
                        maxWidth: AppSpacing.sidebarMaximum)
+                .background(InitialSplitPosition(position: AppSpacing.sidebarWidth))
             }
 
             VStack(spacing: 0) {
@@ -58,6 +60,61 @@ struct ContentView: View {
     }
 
     private func toggleSidebar() { sidebarVisible.toggle() }
+}
+
+/// `HSplitView` does not expose its divider position. Its flexible frame also
+/// treats `idealWidth` as a fallback rather than an initial width, so set the
+/// native divider once while leaving the sidebar resizable afterward.
+private struct InitialSplitPosition: NSViewRepresentable {
+    let position: CGFloat
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+
+    func makeNSView(context: Context) -> SplitPositionProbe {
+        let probe = SplitPositionProbe()
+        probe.onMoveToWindow = { [weak coordinator = context.coordinator] probe in
+            Task { @MainActor in
+                coordinator?.apply(position: position, from: probe)
+            }
+        }
+        return probe
+    }
+
+    func updateNSView(_ probe: SplitPositionProbe, context: Context) {
+        Task { @MainActor in
+            context.coordinator.apply(position: position, from: probe)
+        }
+    }
+
+    final class Coordinator {
+        private var hasAppliedPosition = false
+
+        func apply(position: CGFloat, from probe: NSView) {
+            guard !hasAppliedPosition else { return }
+
+            var ancestor = probe.superview
+            while let view = ancestor {
+                if let splitView = view as? NSSplitView, splitView.subviews.count > 1 {
+                    splitView.setPosition(position, ofDividerAt: 0)
+                    hasAppliedPosition = true
+                    return
+                }
+                ancestor = view.superview
+            }
+        }
+    }
+}
+
+private final class SplitPositionProbe: NSView {
+    var onMoveToWindow: ((SplitPositionProbe) -> Void)?
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        guard window != nil else { return }
+        onMoveToWindow?(self)
+    }
 }
 
 #Preview {
