@@ -35,18 +35,18 @@ struct BreakTimerMenuBarScreen: View {
 
                     Divider()
 
-                    Toggle("Break reminders", isOn: $breakTimerEnabled)
+                    Toggle("Break warnings", isOn: $breakTimerEnabled)
                         .toggleStyle(.switch)
                         .controlSize(.small)
                         .font(AppFont.caption)
 
-                    // Button("Set time to 20s remaining") {
-                    //     viewModel.setRemainingTimeForTesting()
-                    // }
-                    // .buttonStyle(.bordered)
-                    // .controlSize(.small)
-                    // .font(AppFont.caption)
-                    // .disabled(!breakTimerEnabled)
+                    Button("Set time to 20s remaining") {
+                        viewModel.setRemainingTimeForTesting()
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                    .font(AppFont.caption)
+                    .disabled(!breakTimerEnabled)
                 }
                 .padding(AppSpacing.m)
             }

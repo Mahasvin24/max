@@ -18,7 +18,7 @@ and keep controls and copy purposeful.
 - `ChatViewModel` owns request state. Sending remains busy through stream completion;
   waiting ends at the first nonempty chunk. Request identities isolate late results
   after navigation. A stream closure is the only injected testing dependency.
-- `MenuBarExtra`, the timer, notifications, and sleep/wake behavior retain their
+- `MenuBarExtra`, the timer warning, and sleep/wake behavior retain their
   existing ownership. The popover's appearance override is local to its screen.
 
 ## Tokens

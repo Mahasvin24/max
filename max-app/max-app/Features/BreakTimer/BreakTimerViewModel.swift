@@ -8,7 +8,7 @@
 //  Was BlinkTrackerViewModel: also drove a camera-based blink-rate monitor
 //  alongside this timer. Cut — the camera indicator light turning on made you
 //  self-conscious about blinking, which defeats the point. This is now just
-//  the 20-20-20 break reminder, no camera/Vision involved at all.
+//  the 20-20-20 break warning, no camera/Vision involved at all.
 //
 
 import AppKit
@@ -28,7 +28,6 @@ final class BreakTimerViewModel {
             Constants.BreakTimer.enabledDefaultsKey: true,
         ])
         registerLifecycleObservers()
-        Task { await NotificationService.requestAuthorizationIfNeeded() }
 
         if UserDefaults.standard.bool(forKey: Constants.BreakTimer.enabledDefaultsKey) {
             startBreakTimer()
@@ -47,7 +46,7 @@ final class BreakTimerViewModel {
     }
 
     /// Shortens the current interval without bypassing the normal timer and
-    /// notification path, making the complete reminder flow easy to verify.
+    /// warning path, making the complete timer flow easy to verify.
     func setRemainingTimeForTesting() {
         guard breakTimerTask != nil else { return }
         isPausedForInactivity = false
@@ -93,7 +92,7 @@ final class BreakTimerViewModel {
         }
 
         guard let nextBreakAt, now >= nextBreakAt else { return }
-        NotificationService.postBreakReminder()
+        BreakWarningPresenter.shared.show()
         resumeTimer(at: now)
     }
 

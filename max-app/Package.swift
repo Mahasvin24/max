@@ -12,7 +12,7 @@ let package = Package(
             exclude: [
                 "App", "Assets.xcassets", "ContentView.swift",
                 "Features/BreakTimer", "Features/Sidebar", "Features/Chat/ChatScreen.swift",
-                "Features/Chat/Components", "Shared/DesignSystem", "Shared/NotificationService.swift"
+                "Features/Chat/Components", "Shared/DesignSystem"
             ],
             sources: ["Features/Chat/ChatViewModel.swift", "Shared/APIClient.swift",
                       "Shared/Schemas.swift", "Shared/Errors.swift", "Shared/Constants.swift"],

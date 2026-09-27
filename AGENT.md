@@ -55,3 +55,14 @@ and if the user has stepped away, it simply times out. That is not a reason to
 stop, and not a reason to claim something renders correctly without looking:
 render the views offscreen instead. `max-app/AGENT.md` has the recipe and, more
 importantly, the one thing that method cannot check.
+
+## Backend streaming invariant
+
+`backend/routers/chat.py` iterates the value returned by
+`agent.llm.message()` as raw Groq `ChatCompletionChunk` objects and reads
+`chunk.choices[0].delta.content`. Keep `message()` returning
+`client.chat.completions.create(..., stream=True)` directly unless the router is
+changed in the same tested patch. An unfinished `AgentStream` wrapper committed
+in `0432e38` broke that contract. Verify changes with a fake-chunk `/messages`
+SSE integration test against a temporary SQLite database. Last verified:
+2026-09-26.

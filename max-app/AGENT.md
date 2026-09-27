@@ -32,6 +32,45 @@ ControlCenter` didn't help. Renaming to `com.mahasvin.max-app` fixed it
 instantly. If the icon ever vanishes again, suspect that state first — and don't
 rewrite this in AppKit, which fails the same way.
 
+The same symptom later recurred with the correct bundle identifier after status
+item experiments. `defaults read com.apple.controlcenter` showed
+`NSStatusItem Visible Item-0 = false` even though WindowServer still reported a
+live 42×33 `Item-0` slot. Restoring that preference to `true` and restarting
+Control Center repaired the OS-side insertion state; no image or SwiftUI change
+was needed. Confirm `Item-0` belongs to Max before changing the preference.
+
+Another recurrence was caused by build experiments registering many different
+`Max.app` paths under the same `com.mahasvin.max-app` bundle identifier. In that
+state the current process, `MenuBarExtra` source, built `LogoMark`, and Control
+Center visibility preference were all correct, but the item still did not
+render. Inspect registrations with `lsregister -dump`; unregister stale
+temporary builds with `lsregister -u <explicit app paths>`, force-register the
+canonical Xcode build, and restart Control Center. Do not delete the temporary
+apps as part of this recovery. Last verified: 2026-09-26.
+
+The `com.mahasvin.max-app` identifier later became poisoned again: Control
+Center accepted its `Item-0`, then immediately moved the host to its blocked
+list. A full unregister/register and Control Center restart did not clear it,
+while the identical signed binary rendered immediately under a fresh ID. The
+production identifier is now `com.mahasvin.max`; do not change it back. Last
+verified: 2026-09-26.
+
+A fresh status item is inserted to the left of Hidden Bar's divider and is
+therefore hidden when Hidden Bar next launches. `AppIconDelegate` performs a
+one-time migration of AppKit's automatic `Item-0` preferred position to 360,
+between the existing visible third-party items. The migration flag prevents it
+from overriding later user rearrangement or removal. Last verified: 2026-09-26.
+
+The eye-break warning is currently a separate non-activating `NSPanel`, hosted
+by SwiftUI. Its horizontal placement is only an approximation derived from the
+status item's saved preferred position; it is not attached to the actual
+`MenuBarExtra` button. SwiftUI does not expose that button or a programmatic
+popover anchor. Exact anchoring requires deliberately moving menu-bar ownership
+to an AppKit `NSStatusItem`; do not describe or treat the current placement as
+exact. A system notification banner is not an alternative because its duration
+cannot be controlled. Evidence: `Features/BreakTimer/BreakWarningPresenter.swift`.
+Last verified: 2026-09-26.
+
 ### How to diagnose it
 
 Don't eyeball the menu bar; on a notched Mac you can't tell "suppressed" from
@@ -47,10 +86,10 @@ Don't eyeball the menu bar; on a notched Mac you can't tell "suppressed" from
   known-good throwaway app the *suspect bundle ID* and watching it go dark,
   while the same app under a fresh ID worked.
 
-Worth knowing so you don't chase them: a full menu bar, the notch, and menu bar
-managers (boringNotch, Hidden Bar are both installed on this machine) are the
-usual suspects and were **not** involved — the probe icon rendered fine in that
-same space.
+For the blocked-bundle-ID failure, a full menu bar, the notch, and menu bar
+managers were not the root cause: the probe icon rendered in that same space.
+Hidden Bar still controls which side of its divider a fresh item lands on, as
+described above.
 
 ### `MenuBarExtra` label rules
 

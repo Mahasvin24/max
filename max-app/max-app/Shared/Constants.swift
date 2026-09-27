@@ -19,12 +19,19 @@ struct Constants {
         static let baseURL = "http://127.0.0.1:8000"
     }
 
+    struct MenuBar {
+        static let preferredPositionDefaultsKey = "NSStatusItem Preferred Position Item-0"
+        static let visibilityDefaultsKey = "NSStatusItem Visible Item-0"
+        static let migrationDefaultsKey = "didMigrateMenuBarItemPosition"
+        static let initialPreferredPosition: CGFloat = 360
+    }
+
     // BreakTimer
     // Was Constants.BlinkTracker — also held camera/Vision sampling constants
     // for a blink-rate monitor that's since been cut (the camera indicator
     // light made you self-conscious about blinking, defeating the point).
     struct BreakTimer {
-        /// 20-20-20 rule: every 20 minutes, a 20-second reminder to look at
+        /// 20-20-20 rule: every 20 minutes, a 20-second warning to look at
         /// something ~20 feet away.
         ///
         /// Renamed from `breakIntervalMinutes`, which was misleading: the value is
@@ -34,6 +41,7 @@ struct Constants {
         /// no unit suffix is the honest spelling.
         static let breakInterval: TimeInterval = 20 * 60
         static let breakDurationSeconds: TimeInterval = 20
+        static let warningDuration: TimeInterval = 5
 
         /// Treat three minutes without keyboard, mouse, or tablet input as time away
         /// from the Mac. While away, the next interval stays at a full 20

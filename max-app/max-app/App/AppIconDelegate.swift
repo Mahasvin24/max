@@ -1,23 +1,28 @@
 import AppKit
-import UserNotifications
 
-/// Configures app-wide appearance, Dock icon, and notification presentation.
+/// Configures app-wide appearance, Dock icon, and menu-bar placement.
 @MainActor
-final class AppIconDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDelegate {
+final class AppIconDelegate: NSObject, NSApplicationDelegate {
     func applicationWillFinishLaunching(_ notification: Notification) {
-        // Foreground notifications are handed to the delegate. Explicitly ask
-        // macOS for a banner so the reminder remains visible even when Max is
-        // the active app.
-        UNUserNotificationCenter.current().delegate = self
+        migrateMenuBarItemPositionIfNeeded()
         NSApp.appearance = NSAppearance(named: .darkAqua)
         guard let image = NSImage(named: "DockIconDark") else { return }
         NSApp.applicationIconImage = image
     }
 
-    nonisolated func userNotificationCenter(
-        _ center: UNUserNotificationCenter,
-        willPresent notification: UNNotification
-    ) async -> UNNotificationPresentationOptions {
-        [.banner, .sound]
+    private func migrateMenuBarItemPositionIfNeeded() {
+        let defaults = UserDefaults.standard
+        guard !defaults.bool(forKey: Constants.MenuBar.migrationDefaultsKey) else { return }
+
+        // MenuBarExtra uses AppKit's first automatic autosave name, Item-0.
+        // Give a newly registered Max item a visible initial position to the
+        // right of Hidden Bar's divider. This runs once so later user dragging
+        // or removal remains authoritative.
+        defaults.set(
+            Constants.MenuBar.initialPreferredPosition,
+            forKey: Constants.MenuBar.preferredPositionDefaultsKey
+        )
+        defaults.set(true, forKey: Constants.MenuBar.visibilityDefaultsKey)
+        defaults.set(true, forKey: Constants.MenuBar.migrationDefaultsKey)
     }
 }
