@@ -114,7 +114,7 @@ final class BreakTimerViewModel {
         let center = NSWorkspace.shared.notificationCenter
         lifecycleObserverTokens = [
             center.addObserver(forName: NSWorkspace.willSleepNotification, object: nil, queue: .main) { [weak self] _ in
-                Task { @MainActor in self?.pauseIfEnabled() }
+                Task { @MainActor [weak self] in self?.pauseIfEnabled() }
             },
             center.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { [weak self] _ in
                 Task { @MainActor in self?.pauseIfEnabled() }
