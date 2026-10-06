@@ -285,7 +285,7 @@ private extension StringProtocol {
     /// `field:value`). Per spec, at most one leading space after the colon
     /// is stripped — no other trimming — so a piece's own leading/trailing
     /// whitespace survives the trip.
-    func sseField(_ name: String) -> String? {
+    nonisolated func sseField(_ name: String) -> String? {
         guard hasPrefix("\(name):") else { return nil }
         let rest = dropFirst(name.count + 1)
         return String(rest.first == " " ? rest.dropFirst() : rest)
