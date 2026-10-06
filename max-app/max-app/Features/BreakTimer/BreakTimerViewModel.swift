@@ -123,7 +123,7 @@ final class BreakTimerViewModel {
                 Task { @MainActor [weak self] in self?.pauseIfEnabled() }
             },
             center.addObserver(forName: NSWorkspace.screensDidWakeNotification, object: nil, queue: .main) { [weak self] _ in
-                Task { @MainActor in self?.pauseIfEnabled() }
+                Task { @MainActor [weak self] in self?.pauseIfEnabled() }
             },
             center.addObserver(forName: NSWorkspace.sessionDidResignActiveNotification, object: nil, queue: .main) { [weak self] _ in
                 Task { @MainActor in self?.pauseIfEnabled() }
