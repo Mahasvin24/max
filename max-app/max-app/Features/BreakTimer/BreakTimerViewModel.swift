@@ -28,6 +28,7 @@ final class BreakTimerViewModel {
             Constants.BreakTimer.enabledDefaultsKey: true,
         ])
         registerLifecycleObservers()
+        Task { await BreakNotificationService.requestAuthorizationIfNeeded() }
 
         if UserDefaults.standard.bool(forKey: Constants.BreakTimer.enabledDefaultsKey) {
             startBreakTimer()
@@ -92,7 +93,7 @@ final class BreakTimerViewModel {
         }
 
         guard let nextBreakAt, now >= nextBreakAt else { return }
-        BreakWarningPresenter.shared.show()
+        BreakNotificationService.postBreakNotification()
         resumeTimer(at: now)
     }
 

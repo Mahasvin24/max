@@ -41,7 +41,6 @@ struct Constants {
         /// no unit suffix is the honest spelling.
         static let breakInterval: TimeInterval = 20 * 60
         static let breakDurationSeconds: TimeInterval = 20
-        static let warningDuration: TimeInterval = 5
 
         /// Treat three minutes without keyboard, mouse, or tablet input as time away
         /// from the Mac. While away, the next interval stays at a full 20

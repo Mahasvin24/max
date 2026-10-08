@@ -61,22 +61,14 @@ one-time migration of AppKit's automatic `Item-0` preferred position to 360,
 between the existing visible third-party items. The migration flag prevents it
 from overriding later user rearrangement or removal. Last verified: 2026-09-26.
 
-**Open product requirement:** the eye-break warning must originate from the
-actual menu-bar icon, not from an estimated or visually faked anchor. The
-current non-activating `NSPanel` does **not** satisfy that requirement: its
-horizontal placement is only an approximation derived from the status item's
-saved preferred position, because SwiftUI exposes neither the `MenuBarExtra`
-button nor a programmatic popover anchor. Exact anchoring requires deliberately
-moving menu-bar ownership to an AppKit `NSStatusItem`; do not describe the
-current implementation as complete. A system notification banner is not an
-alternative because its duration cannot be controlled.
-
-The approved warning card is intentionally personal and minimal: show Max's
-logo with the exact copy “It's been 20 minutes. Take a break?”, remain visible
-for five seconds, and do not activate Max. The menu-panel button that sets the
-timer to 20 seconds remaining is intentionally visible for testing. Evidence:
-`Features/BreakTimer/BreakWarningPresenter.swift`,
-`Features/BreakTimer/BreakTimerMenuBarScreen.swift`. Last verified: 2026-09-29.
+The eye-break reminder uses a native macOS local notification. This supersedes
+the custom `NSPanel` and its unresolved attempt to approximate the menu-bar
+icon's position. Notification placement and duration are intentionally left to
+macOS; do not reintroduce a visually faked anchor. The notification's approved
+copy is “It's been 20 minutes. Take a break?” The menu-panel button that sets
+the timer to 20 seconds remaining remains intentionally visible for testing.
+Evidence: `Features/BreakTimer/BreakNotificationService.swift`,
+`Features/BreakTimer/BreakTimerMenuBarScreen.swift`. Last verified: 2026-10-07.
 
 ### How to diagnose it
 

@@ -1,10 +1,13 @@
 import AppKit
+import UserNotifications
 
-/// Configures app-wide appearance, Dock icon, and menu-bar placement.
+/// Configures app-wide appearance, Dock icon, menu-bar placement, and native
+/// notification presentation while Max is in the foreground.
 @MainActor
-final class AppIconDelegate: NSObject, NSApplicationDelegate {
+final class AppIconDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDelegate {
     func applicationWillFinishLaunching(_ notification: Notification) {
         migrateMenuBarItemPositionIfNeeded()
+        UNUserNotificationCenter.current().delegate = self
         NSApp.appearance = NSAppearance(named: .darkAqua)
         guard let image = NSImage(named: "DockIconDark") else { return }
         NSApp.applicationIconImage = image
@@ -24,5 +27,12 @@ final class AppIconDelegate: NSObject, NSApplicationDelegate {
         )
         defaults.set(true, forKey: Constants.MenuBar.visibilityDefaultsKey)
         defaults.set(true, forKey: Constants.MenuBar.migrationDefaultsKey)
+    }
+
+    nonisolated func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification
+    ) async -> UNNotificationPresentationOptions {
+        [.banner, .sound]
     }
 }
